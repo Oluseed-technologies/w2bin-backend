@@ -53,6 +53,7 @@ exports.getService = catchAsync(async (req, res, next) => {
     {
       $match: { user: { $eq: req.user._id } },
     },
+
     {
       $lookup: {
         from: "companies",
@@ -61,14 +62,35 @@ exports.getService = catchAsync(async (req, res, next) => {
         as: "company",
       },
     },
-    // {
-    //   $group: {
-    //     _id: "$company",
-    //     totalBudget: { $sum: "$budget" },
-    //     totalPrice: { $sum: "$service.price" },
-    //     totalServices: { $sum: 1 },
-    //   },
-    // },
+    {
+      $unwind: "$company",
+    },
+    {
+      $project: { "company.profile": 1, status: 1, budget: 1, service: 1 },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "company.profile",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: "$user",
+    },
+    {
+      $project: {"user.companyName" : 1, status: 1, budget: 1, service: 1}
+    },
+
+    {
+      $group: {
+        _id: "$user.companyName",
+        totalBudget: { $sum: "$budget" },
+        totalPrice: { $sum: "$service.price" },
+        totalServices: { $sum: 1 },
+      },
+    },
   ]);
   res.status(200).json({
     status: "success",
