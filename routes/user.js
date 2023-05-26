@@ -5,18 +5,12 @@ const { protect, restrict } = require("../controllers/auth");
 const {
   getMyDetails,
   updateMyDetails,
-  updateCompanyProfile,
-  createCompanyProfile,
-  getCompanyProfile,
+  activateUserAccount,
 } = require("../controllers/user");
 
 router.use(protect);
 
 router.route("/profile").get(getMyDetails).put(updateMyDetails);
-router
-  .route("/company/profile")
-  .post(restrict("company"), createCompanyProfile)
-  .get(restrict("company"), getCompanyProfile)
-  .put(restrict("company"), updateCompanyProfile);
+router.route("/activate-account").put(activateUserAccount);
 
 module.exports = router;

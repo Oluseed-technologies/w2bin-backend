@@ -44,23 +44,18 @@ const UserSchema = mongoose.Schema(
     },
     phone: {
       type: Number,
-      required: [true, "phone number is required"],
       minLength: [11, "Please provide a valid phone number"],
       maxLength: [11, "Please provide a valid phone number"],
+      unique: [true, "The user with the specified phone number already exist"],
+        required: [true, "Phone number is required"],
     },
     country: {
       type: String,
-      required: [true, "Country name is required"],
     },
     state: {
       type: String,
-      required: [true, "State name is required"],
     },
     address: {
-      type: String,
-      required: [true, "address  is required"],
-    },
-    companyName: {
       type: String,
     },
     resetToken: {
@@ -68,16 +63,6 @@ const UserSchema = mongoose.Schema(
     },
     resetTokenExpire: {
       type: Date,
-    },
-
-    type: {
-      type: String,
-      enum: {
-        values: ["company", "user"],
-        message:
-          " {{VALUE}} is not a valid account type,  account type is either company or user",
-      },
-      default: "user",
     },
     status: {
       type: String,

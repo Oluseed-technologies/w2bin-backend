@@ -12,6 +12,7 @@ const catchAsync = require("../utils/catchAsync");
 
 const createToken = (res, id, data, message) => {
   const token = jwt.sign({ id }, process.env.SECRET_CODE);
+  data.password = undefined
 
   return res.status(200).json({
     status: "success",
@@ -42,10 +43,6 @@ exports.createAccount = catchAsync(async (req, res, next) => {
     "resetTokenExpire",
   ]);
 
-  if (data.type === "company" && !data.companyName) {
-    return next(new AppError("Please provide a company name", 401));
-  }
-
   const findUser = await User.findOne({
     $or: [
       { email: data.email },
@@ -57,11 +54,10 @@ exports.createAccount = catchAsync(async (req, res, next) => {
     return next(new AppError("User credential already exist", 409));
   }
 
-  if (data.type === "company") {
-    data.status = "pending";
-  }
+  data.status = "pending";
 
   const response = await User.create(data);
+  response.password = undefined;
 
   res.status(201).json({
     status: "created",
@@ -111,7 +107,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.resetToken = undefined;
   user.resetTokenExpire = undefined;
   const response = await user.save({ validateBeforeSave: true });
-  console.log(response);
+  response.password = undefined;
   res.status(200).json({
     status: "success",
     message: "Password successfully changed",
