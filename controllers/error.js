@@ -69,6 +69,7 @@ const GlobalError = (err, req, res, next) => {
   res.status(statusCode).json({
     status,
     message: err.message,
+    err,
   });
 };
 

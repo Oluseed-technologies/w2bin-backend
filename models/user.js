@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const statesData = require("../datas/location.json");
+
+const state = statesData.map((data, index) => {
+  return data.state;
+});
 
 const UserSchema = mongoose.Schema(
   {
@@ -27,7 +32,8 @@ const UserSchema = mongoose.Schema(
         validator: function (val) {
           return val === this.password;
         },
-        message: "Password confirmation failed",
+        message:
+          "Password confirmation failed, please check the password again.",
       },
     },
     firstName: {
@@ -43,20 +49,33 @@ const UserSchema = mongoose.Schema(
       maxLength: [30, "Last Name cannot be greate than 30"],
     },
     phone: {
-      type: Number,
-      minLength: [11, "Please provide a valid phone number"],
-      maxLength: [11, "Please provide a valid phone number"],
+      type: String,
+      validate: [
+        validator.isMobilePhone,
+        "Please provide a valid phone number",
+      ],
       unique: [true, "The user with the specified phone number already exist"],
-        required: [true, "Phone number is required"],
+      required: [true, "Phone number is required"],
     },
     country: {
       type: String,
+      default: "Nigeria",
     },
     state: {
+      type: String,
+      enum: state,
+    },
+    lga: {
       type: String,
     },
     address: {
       type: String,
+    },
+    token: {
+      type: Number,
+    },
+    tokenExpire: {
+      type: Date,
     },
     resetToken: {
       type: Number,
@@ -66,6 +85,7 @@ const UserSchema = mongoose.Schema(
     },
     status: {
       type: String,
+      default: "pending",
       enum: {
         values: ["pending", "suspended", "active"],
         message:

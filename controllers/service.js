@@ -80,7 +80,7 @@ exports.getService = catchAsync(async (req, res, next) => {
       $unwind: "$user",
     },
     {
-      $project: {"user.companyName" : 1, status: 1, budget: 1, service: 1}
+      $project: { "user.companyName": 1, status: 1, budget: 1, service: 1 },
     },
 
     {
