@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
-const nodemailer = require("nodemailer");
-const sendInBlueTransport = require("nodemailer-sendinblue-transport");
+const Email = require("../utils/email");
 
 // Utilities import
 
@@ -42,6 +41,8 @@ const sendOTC = async (
 
   data[token] = tokenValue;
   data[tokenExpire] = expire;
+  const emailInstance = new Email(data.email);
+  await emailInstance.sendOTP(tokenValue);
   const user = new User(data);
   user.save({ validateBeforeSave: true });
   return res.status(statusCode).json({
@@ -60,42 +61,7 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("incorrect credential", 401));
   }
   delete data.password;
-  // const transporter = nodemailer.createTransport({
-  //   host: "smtp-relay.sendinblue.com",
-  //   port: "465",
-  //   auth: {
-  //     user: "devhalltech@gmail.com",
-  //     pass: "vPzCZ76SI2aBEJ3w",
-  //     // pass: "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",
-  //   },
-  //   secure: true,
-  // });
 
-  // new sendInBlueTransport({
-  //   auth: {
-  //     // user: "w2bin",
-  //     api_key:
-  //       "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",
-  //   },
-  // })
-
-  const mailOptions = {
-    from: "w2din@admin.com",
-    to: email,
-    subject: "Test Email",
-    text: "Hello from Nodemailer and Sendinblue!",
-  };
-  // transporter.sendMail(mailOptions, (error, info) => {
-  //   if (error) {
-  //     return res.status(403).json({
-  //       status: "error",
-  //       message: error.message,
-  //       error,
-  //     });
-  //     // return next(new AppError("error from the email", 403));
-  //   }
-
-  // });
   createToken(
     res,
     data?._id,
@@ -105,6 +71,7 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 // create account controller
+
 exports.createAccount = catchAsync(async (req, res, next) => {
   // filtering the request data
   const data = FilterBody(req.body);
@@ -135,6 +102,30 @@ exports.createAccount = catchAsync(async (req, res, next) => {
     "created",
     "Account created successfully, check your email to verify your account"
   );
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  const { email } = req.query;
+  console.log(email);
+  const { token } = req.body;
+  if (!token) {
+    return next(new AppError("Please provide both the email and token", 402));
+  }
+  const user = await User.findOne({ email }).select("+password");
+  if (!user) {
+    return next(new AppError("This email does not exist", 402));
+  }
+
+  if (user.token !== +token) {
+    return next(new AppError("This token is invalid or it has expired", 402));
+  }
+
+  user.token = undefined;
+  user.tokenExpire = undefined;
+  user.emailVerified = true;
+  user.confirmPassword = user.password;
+  await user.save({ validateBeforeSave: true });
+  createToken(res, user._id, user, "Email successfully verified");
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
