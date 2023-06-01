@@ -7,11 +7,7 @@ const companySchema = mongoose.Schema(
       ref: "User",
       required: [true, "The company profile ID is required"],
     },
-    // services: {
-    //   type: [{}],
-    //   required: [true, "A company must have atleast one services"],
-    //   validate: [validator.isEmpty, "A company must have atleast one service "],
-    // },
+
     services: {
       type: [
         {
@@ -65,16 +61,10 @@ const companySchema = mongoose.Schema(
       of: String,
       required: "A company must have atleast one social media handle",
     },
-    workers: [
-      {
-        name: {
-          type: String,
-        },
-        role: {
-          type: String,
-        },
-      },
-    ],
+    workers: {
+      type: [mongoose.Schema.ObjectId],
+      ref: "Team",
+    },
   },
   {
     timestamps: true,

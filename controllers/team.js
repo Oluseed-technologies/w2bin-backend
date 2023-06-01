@@ -1,6 +1,7 @@
 const Team = require("../models/team");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
+const { getData, deleteData, updateData } = require("../utils/factory");
 
 exports.createWorker = catchAsync(async (req, res, next) => {
   const { role, firstName, lastName } = req.body;
@@ -34,29 +35,8 @@ exports.getWorkers = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateWorker = catchAsync(async (req, res, next) => {
-  const { id: _id } = req.params;
-  const data = await Team.findOne({ _id });
-  if (!data) return next(new AppError("This worker does not exist"));
-  const response = await Team.findByIdAndUpdate(_id, req.body, {
-    runValidators: true,
-  });
-  const worker = Team.findById(response._id);
-  return res.status(200).json({
-    status: "updated",
-    message: "worker detail successfully updated",
-    data,
-  });
-});
+exports.updateWorker = updateData(Team, "worker");
 
-exports.deleteWorker = catchAsync(async (req, res, next) => {
-  const { id: _id } = req.params;
-  const data = await Team.findOne({ _id });
-  if (!data) return next(new AppError("This worker does not exist"));
-  const response = await Team.findByIdAndDelete(_id);
+exports.deleteWorker = deleteData(Team, "worker");
 
-  return res.status(200).json({
-    status: "updated",
-    message: "worker  successfully removed",
-  });
-});
+exports.getWorker = getData(Team);

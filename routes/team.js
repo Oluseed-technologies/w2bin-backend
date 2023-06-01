@@ -6,11 +6,12 @@ const {
   getWorkers,
   updateWorker,
   deleteWorker,
+  getWorker,
 } = require("../controllers/team");
 
 router.use(protect);
 router.use(lessRestriction("company"));
-router.route("/:id").put(updateWorker).delete(deleteWorker);
+router.route("/:_id").put(updateWorker).delete(deleteWorker).get(getWorker);
 router.route("/").post(createWorker);
 router.route("/").get(getWorkers);
 
