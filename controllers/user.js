@@ -30,12 +30,7 @@ exports.updateMyDetails = catchAsync(async (req, res, next) => {
     );
   }
 
-  const data = FilterBody(req.body, [
-    "emailVerified",
-    "status",
-    "resetToken",
-    "resetTokenExpire",
-  ]);
+  const data = FilterBody(req.body);
 
   if (
     data.state &&
@@ -78,7 +73,7 @@ exports.activateUserAccount = catchAsync(async (req, res, next) => {
       )
     );
   }
- 
+
   data.status = "active";
   data.password = undefined;
   const response = await User.findByIdAndUpdate(req.user._id, data, {

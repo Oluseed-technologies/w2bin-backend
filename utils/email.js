@@ -23,10 +23,16 @@ class Email {
     };
     await this.createTransport().sendMail(mailOptions);
   }
-  async sendOTP(token) {
+  async sendWelcomeOTP(token) {
     this.sendMail(
       "Welcome to waste management site",
       `Enter this OTP to verify your email - ${token}`
+    );
+  }
+  async sendPasswordOTP(token) {
+    this.sendMail(
+      "Forgotten Password",
+      `Enter this OTP to reset your passsword - ${token}`
     );
   }
 }

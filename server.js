@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
+const AppError = require("./utils/AppError");
 
 // custom files import
 const app = require("./app");
@@ -14,5 +15,7 @@ mongoose
     });
   })
   .catch((err) => {
+    throw new AppError(err.message, 500);
     console.log(err.message);
+    process.exit(1);
   });

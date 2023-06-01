@@ -12,8 +12,10 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "cac-verify": "^2.1.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-validator": "^7.0.1",
     "helmet": "^6.0.1",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",

@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
-const validator = require("validator");
+
 const Email = require("../utils/email");
+const states = require("../datas/location.json");
+const { capitalize, GenerateOtp, validateNumber } = require("../utils/utils");
 
 // Utilities import
 
@@ -13,6 +15,7 @@ const User = require("../models/user");
 // async function wrapper import
 const catchAsync = require("../utils/catchAsync");
 const { send } = require("express/lib/response");
+const { body } = require("express-validator");
 
 const createToken = (res, id, data, message) => {
   const token = jwt.sign({ id }, process.env.SECRET_CODE);
@@ -26,7 +29,7 @@ const createToken = (res, id, data, message) => {
   });
 };
 
-const sendOTC = async (
+const sendTokenResponse = async (
   token,
   tokenExpire,
   data,
@@ -36,14 +39,11 @@ const sendOTC = async (
   status,
   message
 ) => {
-  const tokenValue = Math.floor(10000000 + Math.random() * 90000000);
-  const expire = Date.now() + 10 * 60 * 10000;
-
   data[token] = tokenValue;
   data[tokenExpire] = expire;
   const emailInstance = new Email(data.email);
   await emailInstance.sendOTP(tokenValue);
-  const user = new User(data);
+  const user = await new User(data);
   user.save({ validateBeforeSave: true });
   return res.status(statusCode).json({
     status,
@@ -76,9 +76,31 @@ exports.createAccount = catchAsync(async (req, res, next) => {
   // filtering the request data
   const data = FilterBody(req.body);
 
-  const isValidNigeriaNum = validator.isMobilePhone(data.phone, "en-NG");
-  if (!isValidNigeriaNum) {
+  if (!validateNumber)
     return next(new AppError("Please provide a valid Nigeria number"));
+
+  if (!data.state) return next(new AppError("Please provide your state"));
+  console.log(data.state);
+  console.log(capitalize(data.state));
+
+  const getState = states.filter((value, index) => {
+    return value.state == capitalize(data.state);
+  });
+  console.log(getState);
+  if (getState.length === 0)
+    return next(new AppError("Please provide a valid state", 400));
+
+  if (!data.lga)
+    return next(new AppError("Please enter your local government area", 400));
+  const lgas = getState[0].lgas;
+
+  const getLga = lgas.find((value, index) => {
+    return value === capitalize(data.lga);
+  });
+  if (!getLga) {
+    return next(
+      new AppError("Please provide a valid Local Government Area", 400)
+    );
   }
 
   const findUser = await User.findOne({
@@ -92,16 +114,22 @@ exports.createAccount = catchAsync(async (req, res, next) => {
     return next(new AppError("User credential already exist", 409));
   }
 
-  sendOTC(
-    "token",
-    "tokenExpire",
-    data,
-    req,
-    res,
-    201,
-    "created",
-    "Account created successfully, check your email to verify your account"
-  );
+  data.type === "user" ? (data.active = "active") : (data.active = "pending");
+
+  const { token, expire } = GenerateOtp();
+
+  const emailInstance = new Email(data.email);
+  await emailInstance.sendWelcomeOTP(token);
+
+  data.token = token;
+  data.tokenExpire = expire;
+  const user = await User.create(data);
+
+  res.status(200).json({
+    status: "created",
+    message: "Account created successfully, check your email to verify",
+    data: user,
+  });
 });
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
@@ -116,6 +144,11 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     return next(new AppError("This email does not exist", 402));
   }
 
+  if (user.emailVerified) {
+    return next(new AppError("This  email is already verified", 200));
+  }
+  console.log(user.token);
+  console.log(token);
   if (user.token !== +token) {
     return next(new AppError("This token is invalid or it has expired", 402));
   }
@@ -131,23 +164,26 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
+
   if (!user) {
     return res.status(200).json({
       status: "success",
       message: "An email as been sent to the email provided if it exist",
     });
   }
-  const resetToken = Math.floor(10000000 + Math.random() * 90000000);
-  user.resetToken = resetToken;
-  user.resetTokenExpire = Date.now() + 10 * 60 * 10000;
-  console.log(new Date(Date.now()).toUTCString());
-  console.log(new Date(Date.now() + 10 * 60 * 1000).toUTCString());
+  const { token, expire } = GenerateOtp();
+
+  const emailInstance = new Email(user.email);
+  await emailInstance.sendPasswordOTP(token);
+
+  user.resetToken = token;
+  user.resetTokenExpire = expire;
+
   const response = await user.save({ validateBeforeSave: false });
 
   res.status(200).json({
     status: "success",
     message: "An email as been sent to the email provided if it exist",
-    resetToken,
   });
 });
 
@@ -232,6 +268,27 @@ exports.restrict = (...args) => {
       return next(
         new AppError(
           `This account is currently ${req.user.status} please contact the admin to activate your account `
+        )
+      );
+    }
+
+    next();
+  };
+};
+
+exports.lessRestriction = (...args) => {
+  return (req, res, next) => {
+    if (!args.includes(req.user.type)) {
+      return next(
+        new AppError(
+          `Only the ${args.join(",")} is authorized to perform this operation`
+        )
+      );
+    }
+    if (!req.user.emailVerified) {
+      return next(
+        new AppError(
+          `Please verify your email address to perform this operation`
         )
       );
     }

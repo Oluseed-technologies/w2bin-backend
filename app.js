@@ -7,6 +7,7 @@ const authRoute = require("./routes/auth");
 const userRoute = require("./routes/user");
 const adminRoute = require("./routes/admin");
 const serviceRoute = require("./routes/service");
+const teamRoute = require("./routes/team");
 
 // Error handlers
 const AppError = require("./utils/AppError");
@@ -20,6 +21,7 @@ app.use(bodyParser.json());
 app.use(`${process.env.BASE_URL}/auth`, authRoute);
 app.use(`${process.env.BASE_URL}/user`, userRoute);
 app.use(`${process.env.BASE_URL}/admin`, adminRoute);
+app.use(`${process.env.BASE_URL}/team`, teamRoute);
 app.use(`${process.env.BASE_URL}/user/service`, serviceRoute);
 
 app.all("*", (req, res, next) => {
