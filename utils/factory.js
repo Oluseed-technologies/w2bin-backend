@@ -1,6 +1,32 @@
 const catchAsync = require("./catchAsync");
 const AppError = require("./AppError");
 
+exports.getAllDatas = (Model) => {
+  return catchAsync(async (req, res, next) => {
+    const data = await Model.find();
+    // const response = await new ApiFeatures(req.query, user).select();
+
+    res.status(200).json({
+      status: "success",
+      message: " datas feteched succesfully",
+      data,
+    });
+  });
+};
+
+exports.getDatasById = (Model, key) => {
+  return catchAsync(async (req, res, next) => {
+    const data = await Model.find({ [key]: req.user._id });
+    // const response = await new ApiFeatures(req.query, user).select();
+
+    res.status(200).json({
+      status: "success",
+      message: " datas feteched succesfully",
+      data,
+    });
+  });
+};
+
 exports.getData = (Model) => {
   return catchAsync(async (req, res, next) => {
     const { _id } = req.params;
