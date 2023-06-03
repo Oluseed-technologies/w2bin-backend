@@ -6,26 +6,26 @@ const Team = require("../models/team");
 const Service = require("../models/service");
 
 exports.createCompany = catchAsync(async (req, res, next) => {
-  const { socialMedia, about, workHours } = req.body;
-  const user = await Company({ profile: req.user._id });
-  console.log(user);
-  if (user) return next(new AppError("company profile already exist", 400));
-
-  const workers = await Team.find({ company: req.user._id });
+  const { about, workHours, socialMedia } = req.body;
   const services = await Service.find({ company: req.user._id });
+  const workers = await Team.find({ company: req.user._id });
 
-  const data = await Company.create({
+  const user = await Company.findOne({ profile: req.user._id });
+  if (user) {
+    return next(new AppError("Company profile already exist", 400));
+  }
+
+  const response = await Company.create({
     about,
-    workHours,
-    socialMedia,
     profile: req.user._id,
-    workers,
     services,
+    workHours,
+    workers,
+    socialMedia,
   });
-  console.log(data);
   return res.status(201).json({
     status: "created",
-    message: "company account successfully activated",
-    data,
+    message: "company profile created",
+    data: response,
   });
 });

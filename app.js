@@ -9,6 +9,7 @@ const adminRoute = require("./routes/admin");
 const serviceRoute = require("./routes/service");
 const teamRoute = require("./routes/team");
 const companyRoute = require("./routes/company");
+const scheduleRoute = require("./routes/schdedule");
 
 // Error handlers
 const AppError = require("./utils/AppError");
@@ -23,8 +24,9 @@ app.use(`${process.env.BASE_URL}/auth`, authRoute);
 app.use(`${process.env.BASE_URL}/user`, userRoute);
 app.use(`${process.env.BASE_URL}/admin`, adminRoute);
 app.use(`${process.env.BASE_URL}/team`, teamRoute);
-app.use(`${process.env.BASE_URL}/company/service`, serviceRoute);
 app.use(`${process.env.BASE_URL}/company`, companyRoute);
+app.use(`${process.env.BASE_URL}/schedule`, scheduleRoute);
+app.use(`${process.env.BASE_URL}/company/service`, serviceRoute);
 
 app.all("*", (req, res, next) => {
   const error = new AppError("route not found", 404);

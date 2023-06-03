@@ -7,6 +7,6 @@ const { getUsers, updateUserStatus } = require("../controllers/admin");
 router.use(protect);
 router.use(restrict("super-admin"));
 router.route("/users").get(getUsers);
-router.route("/users/:id").put(updateUserStatus);
+router.route("/users/:_id").put(updateUserStatus);
 
 module.exports = router;

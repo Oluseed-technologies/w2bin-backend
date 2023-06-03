@@ -2,21 +2,13 @@ const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
 const ApiFeatures = require("../utils/ApiFeature");
 const FilterBody = require("../utils/FilterBody");
+const { getData } = require("../utils/factory");
 
 const User = require("../models/auth");
 const Company = require("../models/company");
 
 // select
-exports.getMyDetails = catchAsync(async (req, res, next) => {
-  const user = User.findById(req.user._id);
-  const response = await new ApiFeatures(req.query, user).select();
-
-  res.status(200).json({
-    status: "success",
-    message: "user data feteched succesfully",
-    data: response,
-  });
-});
+exports.getMyDetails = getData(User);
 
 exports.updateMyDetails = catchAsync(async (req, res, next) => {
   const { password, confirmPassword } = req.body;
@@ -32,18 +24,6 @@ exports.updateMyDetails = catchAsync(async (req, res, next) => {
 
   const data = FilterBody(req.body);
 
-  if (
-    data.state &&
-    data.address &&
-    data.country &&
-    req.user.status !== "suspended"
-  ) {
-    data.user = "active";
-  }
-
-  data.password = undefined;
-  data.status = "active";
-  console.log(data);
   const response = await User.findByIdAndUpdate(req.user._id, data, {
     runValidators: true,
   });

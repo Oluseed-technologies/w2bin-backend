@@ -3,13 +3,13 @@ const FilterBody = require("../utils/FilterBody");
 const ApiFeatures = require("../utils/ApiFeature");
 
 // model import
-const User = require("../models/auth");
+const Auth = require("../models/auth");
 
 // async function wrapper import
 const catchAsync = require("../utils/catchAsync");
 
 exports.getUsers = catchAsync(async (req, res, next) => {
-  const query = User.find();
+  const query = Auth.find();
 
   const users = await new ApiFeatures(req.query, query).select();
 
@@ -23,18 +23,18 @@ exports.getUsers = catchAsync(async (req, res, next) => {
 });
 
 exports.updateUserStatus = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
+  const { _id } = req.params;
+  console.log(_id);
   const { status } = req.body;
-  const response = await User.findByIdAndUpdate(
-    id,
+  const response = await Auth.findByIdAndUpdate(
+    _id,
     { status },
-    { runValidators: true }
+    { runValidators: true, new: true }
   );
-  const user = await User.findById(response._id);
-  console.log(user);
+
   res.status(200).json({
     status: "success",
     message: "User Updated updated  successfully",
-    data: user,
+    data: response,
   });
 });
