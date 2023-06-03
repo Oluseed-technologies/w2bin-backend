@@ -7,7 +7,7 @@ const {
 } = require("../utils/factory");
 
 // model import
-const User = require("../models/user");
+const User = require("../models/auth");
 const Service = require("../models/service");
 const Company = require("../models/company");
 

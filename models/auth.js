@@ -4,10 +4,10 @@ const bcrypt = require("bcryptjs");
 const statesData = require("../datas/location.json");
 
 const state = statesData.map((data, index) => {
-  return data.state;
+  return data.state.toLowerCase();
 });
 
-const UserSchema = mongoose.Schema(
+const authSchema = mongoose.Schema(
   {
     email: {
       type: String,
@@ -40,9 +40,9 @@ const UserSchema = mongoose.Schema(
       type: String,
       required: [
         function () {
-          return this.type.toLowerCase() == "user";
+          return this.type?.toLowerCase() == "user";
         },
-        "user first name is re is required",
+        "user first name is is required",
       ],
       minLength: [3, "First Name cannot be less than 3"],
       maxLength: [30, "First Name cannot be greate than 30"],
@@ -51,37 +51,31 @@ const UserSchema = mongoose.Schema(
       type: String,
       required: [
         function () {
-          return this.type.toLowerCase() == "user";
+          return this.type?.toLowerCase() == "user";
         },
         "User last name is required",
       ],
       minLength: [3, "Last Name cannot be less than 3"],
       maxLength: [30, "Last Name cannot be greate than 30"],
     },
-    // cacNumber: {
-    //   type: Number,
-    //   required: [
-    //     function () {
-    //       return this.type.toLowerCase() == "company";
-    //     },
-    //     "CAC registration number is required",
-    //   ],
-    // },
+
     companyName: {
       type: String,
       required: [
         function () {
-          return this.type.toLowerCase() == "company";
+          return this.type?.toLowerCase() == "company";
         },
         "The company name is required",
       ],
     },
     phone: {
       type: String,
-      validate: [
-        validator.isMobilePhone,
-        "Please provide a valid phone number",
-      ],
+      validate: {
+        validator: function (val) {
+          return validator.isMobilePhone(val, "en-NG");
+        },
+        message: "Please specify a valid Nigeria number",
+      },
       unique: [true, "The user with the specified phone number already exist"],
       required: [true, "Phone number is required"],
     },
@@ -92,15 +86,31 @@ const UserSchema = mongoose.Schema(
 
     state: {
       type: String,
-      enum: {
-        values: state,
-        message: "{{VALUE}} is not a valid a Nigeria state",
+      validate: {
+        validator: function (val) {
+          return state.some((data) => {
+            return data === val?.toLowerCase();
+          });
+        },
+        message: `{{VALUE}} is not a valid Nigeria state`,
       },
       required: [true, "Please enter your state"],
     },
     lga: {
       type: String,
       required: [true, "Please enter your local government"],
+      validate: {
+        validator: function (val) {
+          const localGvtAreas = statesData.filter((data, index) => {
+            return data.state.toLowerCase() === this.state?.toLowerCase();
+          })[0]?.lgas;
+
+          return localGvtAreas?.some((data) => {
+            return data?.toLowerCase() === val?.toLowerCase();
+          });
+        },
+        message: `{{VALUE}} Local Government does not exist the specified state`,
+      },
     },
     address: {
       type: String,
@@ -108,10 +118,13 @@ const UserSchema = mongoose.Schema(
     },
     type: {
       type: String,
-      default: "user",
-      // required : [],
+
+      required: [
+        true,
+        "Please specify the account type, either user or company",
+      ],
       enum: {
-        values: ["user", "company", "admin"],
+        values: ["user", "company"],
         message: "{{VALUE}} is not a valid user",
       },
     },
@@ -160,7 +173,7 @@ const UserSchema = mongoose.Schema(
 
 // pre save middlwares
 
-UserSchema.pre("save", async function (next) {
+authSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.confirmPassword = undefined;
@@ -168,15 +181,15 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-UserSchema.statics.comparePassword = async function (password, hashedPassword) {
+authSchema.statics.comparePassword = async function (password, hashedPassword) {
   return await bcrypt.compare(password, hashedPassword);
 };
 
-UserSchema.methods.toJSON = function (doc, ret, options) {
+authSchema.methods.toJSON = function (doc, ret, options) {
   const user = this.toObject();
   // delete user.password;
   // delete user.__v;
   return user;
 };
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("Auth", authSchema);

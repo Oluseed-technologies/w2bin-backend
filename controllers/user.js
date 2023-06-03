@@ -3,7 +3,7 @@ const catchAsync = require("../utils/catchAsync");
 const ApiFeatures = require("../utils/ApiFeature");
 const FilterBody = require("../utils/FilterBody");
 
-const User = require("../models/user");
+const User = require("../models/auth");
 const Company = require("../models/company");
 
 // select

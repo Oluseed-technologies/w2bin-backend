@@ -33,10 +33,12 @@ const socialMediaSchema = new mongoose.Schema({
   whatsapp: {
     type: String,
     validate: [validator.isURL, "Please enter a valid link"],
+    required: [true, "Please provide your whatsapp link"],
   },
   facebook: {
     type: String,
     validate: [validator.isURL, "Please enter a valid link"],
+    required: [true, "Please provide your facebook link"],
   },
   twitter: {
     type: String,
@@ -54,6 +56,7 @@ const companySchema = mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "User",
       required: [true, "The company profile ID is required"],
+      unique: true,
     },
 
     services: {
@@ -78,7 +81,7 @@ const companySchema = mongoose.Schema(
     },
     socialMedia: {
       type: [socialMediaSchema],
-      required: "A company must have atleast one social media handle",
+      required: [true, "A company must have atleast one social media handle"],
     },
     workers: {
       type: [mongoose.Schema.ObjectId],

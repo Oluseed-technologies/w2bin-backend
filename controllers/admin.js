@@ -3,7 +3,7 @@ const FilterBody = require("../utils/FilterBody");
 const ApiFeatures = require("../utils/ApiFeature");
 
 // model import
-const User = require("../models/user");
+const User = require("../models/auth");
 
 // async function wrapper import
 const catchAsync = require("../utils/catchAsync");

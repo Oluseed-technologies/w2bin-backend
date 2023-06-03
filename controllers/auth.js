@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const Email = require("../utils/email");
 const states = require("../datas/location.json");
-const { capitalize, GenerateOtp, validateNumber } = require("../utils/utils");
+const { GenerateOtp, validateNumber } = require("../utils/utils");
 
 // Utilities import
 
@@ -10,7 +10,7 @@ const AppError = require("../utils/AppError");
 const FilterBody = require("../utils/FilterBody");
 
 // model import
-const User = require("../models/user");
+const Auth = require("../models/auth");
 
 // async function wrapper import
 const catchAsync = require("../utils/catchAsync");
@@ -20,6 +20,7 @@ const { body } = require("express-validator");
 const createToken = (res, id, data, message) => {
   const token = jwt.sign({ id }, process.env.SECRET_CODE);
   data.password = undefined;
+  data.confirmPassword = undefined;
 
   return res.status(200).json({
     status: "success",
@@ -43,7 +44,7 @@ const sendTokenResponse = async (
   data[tokenExpire] = expire;
   const emailInstance = new Email(data.email);
   await emailInstance.sendOTP(tokenValue);
-  const user = await new User(data);
+  const user = await new Auth(data);
   user.save({ validateBeforeSave: true });
   return res.status(statusCode).json({
     status,
@@ -56,65 +57,34 @@ const sendTokenResponse = async (
 // login controller
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-  const data = await User.findOne({ email }).select("+password");
-  if (!data || !(await User.comparePassword(password, data.password))) {
+  const data = await Auth.findOne({ email }).select("+password");
+  if (!data || !(await Auth.comparePassword(password, data.password))) {
     return next(new AppError("incorrect credential", 401));
   }
   delete data.password;
 
-  createToken(
-    res,
-    data?._id,
-    data,
-    "User Logged in successfully and email sent"
-  );
+  createToken(res, data?._id, data, "User Logged in successfully");
 });
 
 // create account controller
 
 exports.createAccount = catchAsync(async (req, res, next) => {
-  // filtering the request data
   const data = FilterBody(req.body);
 
-  if (!validateNumber)
-    return next(new AppError("Please provide a valid Nigeria number"));
-
-  if (!data.state) return next(new AppError("Please provide your state"));
-  console.log(data.state);
-  console.log(capitalize(data.state));
-
-  const getState = states.filter((value, index) => {
-    return value.state == capitalize(data.state);
+  const user = await Auth.findOne({
+    $or: [{ email: data.email }, { phone: data.phone }],
   });
-  console.log(getState);
-  if (getState.length === 0)
-    return next(new AppError("Please provide a valid state", 400));
 
-  if (!data.lga)
-    return next(new AppError("Please enter your local government area", 400));
-  const lgas = getState[0].lgas;
-
-  const getLga = lgas.find((value, index) => {
-    return value === capitalize(data.lga);
-  });
-  if (!getLga) {
+  if (user) {
     return next(
-      new AppError("Please provide a valid Local Government Area", 400)
+      new AppError(
+        "User credential already exist or account already exist",
+        409
+      )
     );
   }
 
-  const findUser = await User.findOne({
-    $or: [
-      { email: data.email },
-      { phone: data.phone === undefined ? "1" : data.phone },
-    ],
-  });
-
-  if (findUser) {
-    return next(new AppError("User credential already exist", 409));
-  }
-
-  data.type === "user" ? (data.active = "active") : (data.active = "pending");
+  data.type === "user" ? (data.status = "active") : (data.status = "pending");
 
   const { token, expire } = GenerateOtp();
 
@@ -123,12 +93,16 @@ exports.createAccount = catchAsync(async (req, res, next) => {
 
   data.token = token;
   data.tokenExpire = expire;
-  const user = await User.create(data);
+  const response = await Auth.create(data);
+
+  response.password = undefined;
+  response.tokenExpire = undefined;
+  response.token = undefined;
 
   res.status(200).json({
     status: "created",
     message: "Account created successfully, check your email to verify",
-    data: user,
+    data: response,
   });
 });
 
@@ -139,7 +113,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   if (!token) {
     return next(new AppError("Please provide both the email and token", 402));
   }
-  const user = await User.findOne({ email }).select("+password");
+  const user = await Auth.findOne({ email }).select("+password");
   if (!user) {
     return next(new AppError("This email does not exist", 402));
   }
@@ -163,7 +137,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await Auth.findOne({ email });
 
   if (!user) {
     return res.status(200).json({
@@ -189,7 +163,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
   const { token, newPassword } = req.body;
-  const user = await User.findOne({
+  const user = await Auth.findOne({
     resetToken: token,
     resetTokenExpire: { $gt: Date.now() },
   });
@@ -220,7 +194,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
   const decode = jwt.verify(token, process.env.SECRET_CODE);
 
-  const user = await User.findById(decode?.id).select("+password");
+  const user = await Auth.findById(decode?.id).select("+password");
 
   if (!user) {
     return next(new AppError("User with this token does not exist"));
@@ -233,14 +207,14 @@ exports.protect = catchAsync(async (req, res, next) => {
 exports.changePassword = catchAsync(async (req, res, next) => {
   const { oldPassword, newPassword } = req.body;
 
-  if (!(await User.comparePassword(oldPassword, req.user.password))) {
+  if (!(await Auth.comparePassword(oldPassword, req.user.password))) {
     return next(new AppError("invalid old password", 401));
   }
   if (!newPassword) {
     return next(new AppError("New Password is required", 401));
   }
 
-  const user = await User.findById(req.user._id).select("+password");
+  const user = await Auth.findById(req.user._id).select("+password");
   user.password = newPassword;
   user.confirmPassword = newPassword;
 
