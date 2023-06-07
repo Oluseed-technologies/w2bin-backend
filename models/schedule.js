@@ -66,6 +66,20 @@ const scheduleSchema = mongoose.Schema(
       type: String,
       required: [true, "Please enter your home address"],
     },
+    status: {
+      type: String,
+      default: "pending",
+      enum: {
+        values: ["pending", "completed", "approved", "rejected"],
+        message: "Schedule status cannot only be {{VALUE}}",
+      },
+    },
+    price: {
+      type: Number,
+    },
+    token: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

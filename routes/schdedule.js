@@ -7,19 +7,19 @@ const {
   getMySchedules,
   updateSchedule,
   getCompanySchedules,
+  sendSchedulePrice,
+  updateStatus,
 } = require("../controllers/schedule");
 
 router.use(protect);
 
-router
-  .route("/:_id")
-  .post(restrict("user"), createSchedule)
-  .put(restrict("user"), updateSchedule);
-router.route("/").get(restrict("user"), getMySchedules);
+router.route("/:_id").post(createSchedule).put(updateSchedule);
+router.route("/").get(getMySchedules);
+
+router.route("/status/:_id").post(updateStatus);
 
 router.use(restrict("company"));
 router.route("/company").get(getCompanySchedules);
-// .get(getServices);
-// router.route("/:_id").get(getService).put(updateService).delete(deleteService);
+router.route("/price/:_id").post(sendSchedulePrice);
 
 module.exports = router;
