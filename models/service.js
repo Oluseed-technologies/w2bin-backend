@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const serviceSchema = mongoose.Schema({
+  company: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
   name: {
     type: String,
     required: [true, "Please enter service name"],
@@ -12,10 +16,6 @@ const serviceSchema = mongoose.Schema({
     type: String,
     required: [true, " Please provide a concise description"],
     minLength: [50, " Service description must not be less than 50 characters"],
-  },
-  company: {
-    ref: "User",
-    type: mongoose.Schema.ObjectId,
   },
 });
 

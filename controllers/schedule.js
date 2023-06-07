@@ -1,12 +1,20 @@
 const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
 const FilterBody = require("../utils/FilterBody");
+const Company = require("../models/company");
 const Schedule = require("../models/schedule");
 const { getData, getDatasById } = require("../utils/factory");
 
 exports.createSchedule = catchAsync(async (req, res, next) => {
   const { currentLocation, type, state, address, description, lga } = req.body;
-  console.log(req.user);
+  const companies = await Company.findById(req.params._id).populate("Auth");
+  console.log(companies);
+  if (!companies) {
+    return next(
+      new AppError("This company does not exist or it's not activated yet", 400)
+    );
+  }
+
   const response = await Schedule.create({
     user: req.user._id,
     company: req.params._id,

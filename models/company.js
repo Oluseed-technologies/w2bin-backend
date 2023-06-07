@@ -64,7 +64,7 @@ const companySchema = mongoose.Schema(
   {
     profile: {
       type: mongoose.Schema.ObjectId,
-      ref: "User",
+      ref: "Auth",
       required: [true, "The company profile ID is required"],
     },
     services: {
@@ -78,7 +78,7 @@ const companySchema = mongoose.Schema(
         validator: function (val) {
           return val.length !== 0;
         },
-        message: "Pleas add atleast one service",
+        message: "Please add atleast one service",
       },
     },
     about: {

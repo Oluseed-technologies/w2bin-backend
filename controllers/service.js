@@ -1,9 +1,9 @@
 const AppError = require("../utils/AppError");
 const {
-  getData,
   getDatasById,
-  updateData,
-  deleteData,
+  getDatasByDoubleId,
+  updateMyData,
+  deleteMyData,
 } = require("../utils/factory");
 
 // model import
@@ -25,10 +25,11 @@ exports.createService = catchAsync(async (req, res, next) => {
   return res.status(201).json({
     status: "created",
     message: "Service created successfully",
+    data: response,
   });
 });
 
-exports.getService = getData(Service);
-exports.updateService = updateData(Service, "service");
-exports.deleteService = deleteData(Service, "service");
+exports.getService = getDatasByDoubleId(Service, "company", "_id");
+exports.updateService = updateMyData(Service, "service", "company");
+exports.deleteService = deleteMyData(Service, "service", "company");
 exports.getServices = getDatasById(Service, "company");

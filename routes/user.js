@@ -11,10 +11,7 @@ const {
 
 router.use(protect);
 
-router
-  .route("/profile")
-  .get(getMyDetails)
-  .put(restrict("user"), updateMyDetails);
+router.route("/profile").get(getMyDetails).put(updateMyDetails);
 router.route("/activate-account").put(protect, activateUserAccount);
 
 module.exports = router;

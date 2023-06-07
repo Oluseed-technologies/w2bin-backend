@@ -7,7 +7,86 @@ const state = statesData.map((data, index) => {
   return data.state.toLowerCase();
 });
 
-const authSchema = mongoose.Schema(
+const workerSchema = mongoose.Schema({
+  firstName: {
+    type: String,
+    required: [true, "Worker first name cannot be empty"],
+
+    minLength: [3, "First Name cannot be less than 3"],
+    maxLength: [30, "First Name cannot be greater than 30"],
+  },
+  lastName: {
+    type: String,
+    required: [true, "Worker Last name caanot be empty"],
+    minLength: [3, "Last Name cannot be less than 3 characters"],
+    maxLength: [30, "Last Name cannot be greate than 30 characters"],
+  },
+  role: {
+    type: String,
+    required: [true, "A worker must have a role"],
+    minLength: [3, "Worker role should not be less than 3 charactes"],
+  },
+});
+const workHoursSchema = mongoose.Schema({
+  day: {
+    type: String,
+    required: [true, "Please choose a day"],
+    enum: {
+      values: [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      message: "Please provide a valid day of the week",
+    },
+  },
+  startHour: {
+    type: Number,
+    required: [true, "Please specify the start hours"],
+    min: 0,
+    max: 23,
+  },
+  endHour: {
+    type: Number,
+    required: [true, "Please specify the end hour"],
+    min: 0,
+    max: 23,
+  },
+});
+
+const socialMediaSchema = mongoose.Schema({
+  whatsapp: {
+    type: String,
+    validate: [validator.isURL, "Please enter a valid link"],
+    required: [true, "Please provide your whatsapp link"],
+  },
+  facebook: {
+    type: String,
+    validate: [validator.isURL, "Please enter a valid link"],
+    required: [true, "Please provide your facebook link"],
+  },
+  twitter: {
+    type: String,
+    validate: [validator.isURL, "Please enter a valid link"],
+  },
+  instagram: {
+    type: String,
+    validate: [validator.isURL, "Please enter a valid link"],
+  },
+});
+
+const userSchema = mongoose.Schema(
   {
     email: {
       type: String,
@@ -124,7 +203,7 @@ const authSchema = mongoose.Schema(
         "Please specify the account type, either user or company",
       ],
       enum: {
-        values: ["user", "company", "super-admin"],
+        values: ["user", "company"],
         message: "{{VALUE}} is not a valid user",
       },
     },
@@ -153,6 +232,27 @@ const authSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    about: {
+      type: String,
+      trim: true,
+      minLength: [
+        30,
+        "The description about the company should not be less than 30 characters",
+      ],
+    },
+    workers: {
+      type: [workerSchema],
+    },
+    workhours: {
+      type: [workHoursSchema],
+    },
+    socialMedias: {
+      type: [socialMediaSchema],
+    },
+    services: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Service",
+    },
   },
 
   {
@@ -173,7 +273,7 @@ const authSchema = mongoose.Schema(
 
 // pre save middlwares
 
-authSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   this.confirmPassword = undefined;
@@ -181,15 +281,15 @@ authSchema.pre("save", async function (next) {
   next();
 });
 
-authSchema.statics.comparePassword = async function (password, hashedPassword) {
+userSchema.statics.comparePassword = async function (password, hashedPassword) {
   return await bcrypt.compare(password, hashedPassword);
 };
 
-authSchema.methods.toJSON = function (doc, ret, options) {
+userSchema.methods.toJSON = function (doc, ret, options) {
   const user = this.toObject();
   // delete user.password;
   // delete user.__v;
   return user;
 };
 
-module.exports = mongoose.model("Auth", authSchema);
+module.exports = mongoose.model("User", userSchema);

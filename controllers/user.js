@@ -2,13 +2,13 @@ const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
 const ApiFeatures = require("../utils/ApiFeature");
 const FilterBody = require("../utils/FilterBody");
-const { getData } = require("../utils/factory");
+const { getData, getDatasById } = require("../utils/factory");
 
 const User = require("../models/auth");
 const Company = require("../models/company");
 
 // select
-exports.getMyDetails = getData(User);
+exports.getMyDetails = getDatasById(User, "_id");
 
 exports.updateMyDetails = catchAsync(async (req, res, next) => {
   const { password, confirmPassword } = req.body;

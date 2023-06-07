@@ -20,7 +20,7 @@ const scheduleSchema = mongoose.Schema(
     },
     description: {
       type: String,
-      required: [true, "Please enter your schedule description"],
+      required: [true, "Please enter a proper schdedule  schedule description"],
     },
     country: {
       type: String,
