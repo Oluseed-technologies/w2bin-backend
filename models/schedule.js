@@ -9,6 +9,7 @@ const scheduleSchema = mongoose.Schema(
     user: {
       type: mongoose.Schema.ObjectId,
       required: [true, "The ID of the user fixing the schedule is required"],
+      ref: "User",
     },
     type: {
       type: String,
@@ -17,6 +18,7 @@ const scheduleSchema = mongoose.Schema(
     company: {
       type: mongoose.Schema.ObjectId,
       required: [true, "Please choose a company"],
+      ref: "User",
     },
     description: {
       type: String,

@@ -118,10 +118,11 @@ const userSchema = mongoose.Schema(
     firstName: {
       type: String,
       required: [
-        function () {
-          return this.type?.toLowerCase() == "user";
-        },
-        "user first name is is required",
+        true,
+        // function () {
+        //   return this.type?.toLowerCase() == "user";
+        // },
+        "First name is is required",
       ],
       minLength: [3, "First Name cannot be less than 3"],
       maxLength: [30, "First Name cannot be greate than 30"],
@@ -129,10 +130,11 @@ const userSchema = mongoose.Schema(
     lastName: {
       type: String,
       required: [
-        function () {
-          return this.type?.toLowerCase() == "user";
-        },
-        "User last name is required",
+        true,
+        // function () {
+        //   return this.type?.toLowerCase() == "user";
+        // },
+        " Last name is required",
       ],
       minLength: [3, "Last Name cannot be less than 3"],
       maxLength: [30, "Last Name cannot be greate than 30"],

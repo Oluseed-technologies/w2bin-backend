@@ -1,9 +1,11 @@
 const AppError = require("../utils/AppError");
 const FilterBody = require("../utils/FilterBody");
 const ApiFeatures = require("../utils/ApiFeature");
+const { getData, getAllDatas } = require("../utils/factory");
 
 // model import
 const Auth = require("../models/auth");
+const Schedule = require("../models/schedule");
 
 // async function wrapper import
 const catchAsync = require("../utils/catchAsync");
@@ -38,3 +40,5 @@ exports.updateUserStatus = catchAsync(async (req, res, next) => {
     data: response,
   });
 });
+
+exports.fetchSchedules = getAllDatas(Schedule);

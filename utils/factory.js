@@ -1,29 +1,43 @@
 const catchAsync = require("./catchAsync");
 const AppError = require("./AppError");
+const ApiFeatures = require("./ApiFeature");
 
 exports.getAllDatas = (Model) => {
   return catchAsync(async (req, res, next) => {
-    const data = await Model.find();
-    // const response = await new ApiFeatures(req.query, user).select();
+    const data = Model.find();
+    const response = await new ApiFeatures(req.query, data)
+      .populate()
+      .filter()
+      .select()
+      .sort()
+      .paginate().query;
 
     res.status(200).json({
       status: "success",
       message: " datas feteched succesfully",
-      data,
+      data: response,
     });
   });
 };
 
 exports.getDatasById = (Model, key) => {
   return catchAsync(async (req, res, next) => {
-    const data = await Model.find({ [key]: req.user._id });
-    console.log(data);
-    // const response = await new ApiFeatures(req.query, user).select();
+    const data = Model.find({ [key]: req.user._id });
+
+    const response = await new ApiFeatures(req.query, data)
+      .populate()
+      .filter()
+      .select()
+      .sort()
+      .paginate();
+
+    const obj = response.toJSON();
+    console.log(obj);
 
     res.status(200).json({
       status: "success",
       message: " datas feteched succesfully",
-      data,
+      data: response,
     });
   });
 };
@@ -48,13 +62,20 @@ exports.getDatasByDoubleId = (Model, key1, key2) => {
 exports.getData = (Model) => {
   return catchAsync(async (req, res, next) => {
     const { _id } = req.params;
-    const data = await Model.findById(_id);
+    const data = Model.findById(_id);
+
+    const response = await new ApiFeatures(req.query, data)
+      .populate()
+      .filter()
+      .select()
+      .sort()
+      .paginate().query;
     // const response = await new ApiFeatures(req.query, user).select();
 
     res.status(200).json({
       status: "success",
       message: " data feteched succesfully",
-      data,
+      data: response,
     });
   });
 };
