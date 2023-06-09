@@ -112,7 +112,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   console.log(email);
   const { token } = req.body;
   if (!token) {
-    return next(new AppError("Please provide both the email and token", 402));
+    return next(new AppError("Please enter the token", 402));
   }
   const user = await Auth.findOne({ email }).select("+password");
   if (!user) {
@@ -139,7 +139,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
   if (!email || !validator.isEmail(email)) {
-    return next(new AppError("Please provide a valid email"));
+    return next(new AppError("Please provide a valid email", 401));
   }
   const user = await Auth.findOne({ email });
 

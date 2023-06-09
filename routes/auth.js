@@ -15,7 +15,7 @@ router.route("/login").post(login);
 router.route("/signup").post(createAccount);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password").post(resetPassword);
-router.route("/verify-email").get(verifyEmail);
+router.route("/verify-email").post(verifyEmail);
 
 router.route("/change-password").post(protect, changePassword);
 
