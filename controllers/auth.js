@@ -100,23 +100,47 @@ exports.createAccount = catchAsync(async (req, res, next) => {
   response.tokenExpire = undefined;
   response.token = undefined;
 
-  res.status(200).json({
+  res.status(201).json({
     status: "created",
     message: "Account created successfully, check your email to verify",
     data: response,
   });
 });
 
+exports.requestVerification = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+  if (!email || !validator.isEmail(email)) {
+    return next(new AppError("Please provide a valid email", 401));
+  }
+  const { token, expire } = GenerateOtp();
+  const data = await Auth.findOne({ email });
+
+  data && data.emailVerified
+    ? next(new AppError("This  email is already verified", 200))
+    : "";
+
+  data ? (data.token = token) : "";
+
+  const emailInstance = new Email(email);
+  await emailInstance.sendWelcomeOTP(token);
+
+  const response = data && (await data.save({ validateBeforeSave: false }));
+
+  res.status(200).json({
+    status: "success",
+    message:
+      "If an account with this email exists, an email has been sent to you.",
+  });
+});
+
 exports.verifyEmail = catchAsync(async (req, res, next) => {
-  const { email } = req.query;
-  console.log(email);
   const { token } = req.body;
   if (!token) {
     return next(new AppError("Please enter the token", 402));
   }
-  const user = await Auth.findOne({ email }).select("+password");
+  const user = await Auth.findOne({ token }).select("+password");
   if (!user) {
-    return next(new AppError("This email does not exist", 402));
+    return next(new AppError("This token is invalid or has expired", 401));
   }
 
   if (user.emailVerified) {
@@ -124,15 +148,13 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   }
   console.log(user.token);
   console.log(token);
-  if (user.token !== +token) {
-    return next(new AppError("This token is invalid or it has expired", 402));
-  }
 
   user.token = undefined;
   user.tokenExpire = undefined;
+  user.resetToken = undefined;
+  user.resetTokenExpire = undefined;
   user.emailVerified = true;
-  user.confirmPassword = user.password;
-  await user.save({ validateBeforeSave: true });
+  await user.save({ validateBeforeSave: false });
   createToken(res, user._id, user, "Email successfully verified");
 });
 

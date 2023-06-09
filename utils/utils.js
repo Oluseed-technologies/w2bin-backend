@@ -4,7 +4,9 @@ exports.capitalize = (value = "") => {
   return `${value.toString().split("")[0].toUpperCase()}${value.slice(1)}`;
 };
 exports.GenerateOtp = () => {
-  const token = Math.floor(10000000 + Math.random() * 90000000);
+  const timestamp = Date.now().toString();
+  const randomNum = Math.floor(Math.random() * 1000000);
+  const token = (timestamp + randomNum).slice(-6);
   const expire = Date.now() + 10 * 60 * 10000;
   return { token, expire };
 };
