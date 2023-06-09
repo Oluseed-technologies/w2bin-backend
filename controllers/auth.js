@@ -16,6 +16,7 @@ const Auth = require("../models/auth");
 const catchAsync = require("../utils/catchAsync");
 const { send } = require("express/lib/response");
 const { body } = require("express-validator");
+const validator = require("validator");
 
 const createToken = (res, id, data, message) => {
   const token = jwt.sign({ id }, process.env.SECRET_CODE);
@@ -137,6 +138,9 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
+  if (!email || !validator.isEmail(email)) {
+    return next(new AppError("Please provide a valid email"));
+  }
   const user = await Auth.findOne({ email });
 
   if (!user) {
