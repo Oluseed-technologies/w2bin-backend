@@ -39,8 +39,8 @@ app.use((req, res, next) => {
 app.use(`${process.env.BASE_URL}/auth`, authRoute);
 app.use(`${process.env.BASE_URL}/user`, userRoute);
 app.use(`${process.env.BASE_URL}/admin`, adminRoute);
-app.use(`${process.env.BASE_URL}/team`, teamRoute);
 app.use(`${process.env.BASE_URL}/company`, companyRoute);
+app.use(`${process.env.BASE_URL}/company/team`, teamRoute);
 app.use(`${process.env.BASE_URL}/schedule`, scheduleRoute);
 app.use(`${process.env.BASE_URL}/company/service`, serviceRoute);
 

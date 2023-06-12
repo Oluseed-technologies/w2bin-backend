@@ -243,7 +243,19 @@ const userSchema = mongoose.Schema(
       ],
     },
     workers: {
-      type: [workerSchema],
+      type: [
+        {
+          firstName: {
+            type: String,
+          },
+          lastName: {
+            type: String,
+          },
+          role: {
+            type: String,
+          },
+        },
+      ],
     },
     workhours: {
       type: [workHoursSchema],

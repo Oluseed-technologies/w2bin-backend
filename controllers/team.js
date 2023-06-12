@@ -1,7 +1,13 @@
 const Team = require("../models/team");
+const User = require("../models/auth");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
-const { getData, deleteData, updateData } = require("../utils/factory");
+const {
+  getData,
+  deleteData,
+  updateData,
+  getDatasById,
+} = require("../utils/factory");
 
 exports.createWorker = catchAsync(async (req, res, next) => {
   const { role, firstName, lastName } = req.body;
@@ -19,6 +25,12 @@ exports.createWorker = catchAsync(async (req, res, next) => {
     company: req.user._id,
   });
 
+  const workers = await Team.find({ company: req.user._id });
+
+  const user = await User.findById(req.user._id);
+  user.workers = workers;
+  user.save({ validateBeforeSave: false });
+
   res.status(201).json({
     status: "created",
     message: "company worker added successfully",
@@ -26,14 +38,7 @@ exports.createWorker = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getWorkers = catchAsync(async (req, res, next) => {
-  const data = await Team.find({ company: req.user._id });
-  res.status(200).json({
-    status: "success",
-    message: "Company workers successfully fetched",
-    data,
-  });
-});
+exports.getWorkers = getDatasById(Team, "company");
 
 exports.updateWorker = updateData(Team, "worker");
 
