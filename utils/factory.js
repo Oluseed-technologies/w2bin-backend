@@ -31,7 +31,7 @@ exports.getDatasById = (Model, key) => {
     //   .sort()
     //   .paginate();
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       message: " datas feteched succesfully",
       data: response,
