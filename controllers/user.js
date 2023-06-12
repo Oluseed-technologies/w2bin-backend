@@ -8,7 +8,15 @@ const User = require("../models/auth");
 const Company = require("../models/company");
 
 // select
-exports.getMyDetails = getDatasById(User, "_id");
+exports.getMyDetails = catchAsync(async (req, res, next) => {
+  const response = await User.findById(req.user._id);
+
+  return res.status(200).json({
+    status: "success",
+    message: " User profile feteched succesfully",
+    data: response,
+  });
+});
 
 exports.updateMyDetails = catchAsync(async (req, res, next) => {
   const { password, confirmPassword } = req.body;
