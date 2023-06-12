@@ -25,7 +25,15 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
+
+  if (req.method === "OPTIONS") {
+    // Respond with 200 OK status code
+    res.sendStatus(200);
+  } else {
+    // Continue to the next middleware for other requests
+    next();
+  }
+  // next();
 });
 
 app.use(`${process.env.BASE_URL}/auth`, authRoute);
