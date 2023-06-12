@@ -22,17 +22,14 @@ exports.getAllDatas = (Model) => {
 
 exports.getDatasById = (Model, key) => {
   return catchAsync(async (req, res, next) => {
-    const data = Model.find({ [key]: req.user._id });
+    const response = await Model.find({ [key]: req.user._id });
 
-    const response = await new ApiFeatures(req.query, data)
-      .populate()
-      .filter()
-      .select()
-      .sort()
-      .paginate();
-
-    const obj = response.toJSON();
-    console.log(obj);
+    // const response = await new ApiFeatures(req.query, data)
+    //   .populate()
+    //   .filter()
+    //   .select()
+    //   .sort()
+    //   .paginate();
 
     res.status(200).json({
       status: "success",

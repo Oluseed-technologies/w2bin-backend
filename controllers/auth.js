@@ -189,6 +189,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
   const { token, newPassword } = req.body;
+  !token && next(new AppError("Please enter the token sent to you", 401));
+
   const user = await Auth.findOne({
     resetToken: token,
     resetTokenExpire: { $gt: Date.now() },
@@ -204,13 +206,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   user.confirmPassword = newPassword;
   user.resetToken = undefined;
   user.resetTokenExpire = undefined;
-  const response = await user.save({ validateBeforeSave: true });
-  response.password = undefined;
-  res.status(200).json({
-    status: "success",
-    message: "Password successfully changed",
-    data: response,
-  });
+  user.password = undefined;
+  const data = await user.save({ validateBeforeSave: true });
+  createToken(res, req.user._id, data, "password change successfully");
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
