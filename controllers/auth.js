@@ -71,6 +71,13 @@ exports.login = catchAsync(async (req, res, next) => {
 
 exports.createAccount = catchAsync(async (req, res, next) => {
   const data = FilterBody(req.body);
+  if (data.type === "super-admin" || data.type === "admin") {
+    return next(
+      new AppError(
+        `Only the super-admin is allowed to create a ${data.type} account`
+      )
+    );
+  }
 
   const user = await Auth.findOne({
     $or: [{ email: data.email }, { phone: data.phone }],
@@ -204,11 +211,14 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   user.password = newPassword;
   user.confirmPassword = newPassword;
+
   user.resetToken = undefined;
   user.resetTokenExpire = undefined;
-  user.password = undefined;
+
   const data = await user.save({ validateBeforeSave: true });
-  createToken(res, req.user._id, data, "password change successfully");
+
+  data.password = undefined;
+  createToken(res, user._id, data, "password change successfully");
 });
 
 exports.protect = catchAsync(async (req, res, next) => {

@@ -22,6 +22,7 @@ exports.createService = catchAsync(async (req, res, next) => {
     price,
     company: req.user._id,
   });
+
   return res.status(201).json({
     status: "created",
     message: "Service created successfully",

@@ -205,7 +205,7 @@ const userSchema = mongoose.Schema(
         "Please specify the account type, either user or company",
       ],
       enum: {
-        values: ["user", "company"],
+        values: ["user", "company", "super-admin", "admin"],
         message: "{{VALUE}} is not a valid user",
       },
     },
