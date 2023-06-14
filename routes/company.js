@@ -4,15 +4,20 @@ const router = require("express").Router();
 const { protect, restrict, lessRestriction } = require("../controllers/auth");
 const {
   createCompany,
-  //   getCompany,
+  getCompanies,
+  getCompany,
   //   getCompanys,
   //   updateCompany,
   //   deleteCompany,
 } = require("../controllers/company");
 
 router.use(protect);
-router.use(lessRestriction("company"));
-router.route("/").post(createCompany);
+router
+  .route("/")
+  .post(lessRestriction("company"), createCompany)
+  .get(getCompanies);
+
+router.route("/:_id").get(getCompany);
 // .get(getServices);
 // router.route("/:_id").get(getService).put(updateService).delete(deleteService);
 
