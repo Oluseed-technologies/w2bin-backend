@@ -123,7 +123,7 @@ exports.requestVerification = catchAsync(async (req, res, next) => {
   const data = await Auth.findOne({ email });
 
   data && data.emailVerified
-    ? next(new AppError("This  email is already verified", 200))
+    ? next(new AppError("This  email is already verified", 401))
     : "";
 
   data ? (data.token = token) : "";
@@ -151,7 +151,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   }
 
   if (user.emailVerified) {
-    return next(new AppError("This  email is already verified", 200));
+    return next(new AppError("This  email is already verified", 401));
   }
   console.log(user.token);
   console.log(token);
