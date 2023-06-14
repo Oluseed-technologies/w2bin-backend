@@ -11,6 +11,11 @@ const {
 
 exports.createWorker = catchAsync(async (req, res, next) => {
   const { role, firstName, lastName } = req.body;
+  if (req.user._id) {
+    return next(
+      new AppError("Only the company is allowed to perform this operation", 401)
+    );
+  }
   const worker = await Team.findOne({ role, lastName, firstName });
   console.log(worker);
   if (worker) {
@@ -18,6 +23,7 @@ exports.createWorker = catchAsync(async (req, res, next) => {
       new AppError("This company worker has already been added", 400)
     );
   }
+
   const data = await Team.create({
     role,
     firstName,
