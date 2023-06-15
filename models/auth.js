@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const statesData = require("../datas/location.json");
+const { string } = require("validatejs");
 
 const state = statesData.map((data, index) => {
   return data.state.toLowerCase();
@@ -266,6 +267,9 @@ const userSchema = mongoose.Schema(
     services: {
       type: mongoose.Schema.ObjectId,
       ref: "Service",
+    },
+    device_id: {
+      type: String,
     },
   },
 

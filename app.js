@@ -10,6 +10,21 @@ const serviceRoute = require("./routes/service");
 const teamRoute = require("./routes/team");
 const companyRoute = require("./routes/company");
 const scheduleRoute = require("./routes/schdedule");
+const notificationRoute = require("./routes/notifications");
+
+const admin = require("firebase-admin");
+const serviceAccount = require("./w2bin.json");
+
+// custom files import
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+exports.instance = () => {
+  const fcm = admin.messaging();
+  return fcm;
+};
 
 // Error handlers
 const AppError = require("./utils/AppError");
@@ -21,7 +36,6 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-  console.log(req.body);
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH ");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -39,6 +53,7 @@ app.use((req, res, next) => {
 app.use(`${process.env.BASE_URL}/auth`, authRoute);
 app.use(`${process.env.BASE_URL}/user`, userRoute);
 app.use(`${process.env.BASE_URL}/admin`, adminRoute);
+app.use(`${process.env.BASE_URL}/notification`, notificationRoute);
 app.use(`${process.env.BASE_URL}/company`, companyRoute);
 app.use(`${process.env.BASE_URL}/company/team`, teamRoute);
 app.use(`${process.env.BASE_URL}/schedule`, scheduleRoute);

@@ -141,7 +141,7 @@ exports.requestVerification = catchAsync(async (req, res, next) => {
 });
 
 exports.verifyEmail = catchAsync(async (req, res, next) => {
-  const { token } = req.body;
+  const { token, device_id } = req.body;
   if (!token) {
     return next(new AppError("Please enter the token", 402));
   }
@@ -161,6 +161,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   user.resetToken = undefined;
   user.resetTokenExpire = undefined;
   user.emailVerified = true;
+  user.device_id = device_id ? device_id : "";
   await user.save({ validateBeforeSave: false });
   createToken(res, user._id, user, "Email successfully verified");
 });
