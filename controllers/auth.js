@@ -122,9 +122,9 @@ exports.requestVerification = catchAsync(async (req, res, next) => {
   const { token, expire } = GenerateOtp();
   const data = await Auth.findOne({ email });
 
-  data && data.emailVerified
-    ? next(new AppError("This  email is already verified", 401))
-    : "";
+  if (data && data.emailVerified) {
+    return next(new AppError("This  email is already verified", 401));
+  }
 
   data ? (data.token = token) : "";
 
@@ -156,12 +156,14 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   console.log(user.token);
   console.log(token);
 
+  user.device_id = device_id;
+
   user.token = undefined;
   user.tokenExpire = undefined;
   user.resetToken = undefined;
   user.resetTokenExpire = undefined;
   user.emailVerified = true;
-  user.device_id = device_id ? device_id : "";
+
   await user.save({ validateBeforeSave: false });
   createToken(res, user._id, user, "Email successfully verified");
 });
