@@ -11,6 +11,7 @@ const teamRoute = require("./routes/team");
 const companyRoute = require("./routes/company");
 const scheduleRoute = require("./routes/schdedule");
 const notificationRoute = require("./routes/notifications");
+const paymentRoute = require("./routes/payment");
 
 const admin = require("firebase-admin");
 const serviceAccount = require("./w2bin.json");
@@ -55,6 +56,7 @@ app.use(`${process.env.BASE_URL}/user`, userRoute);
 app.use(`${process.env.BASE_URL}/admin`, adminRoute);
 app.use(`${process.env.BASE_URL}/notification`, notificationRoute);
 app.use(`${process.env.BASE_URL}/company`, companyRoute);
+app.use(`${process.env.BASE_URL}/payment`, paymentRoute);
 app.use(`${process.env.BASE_URL}/company/team`, teamRoute);
 app.use(`${process.env.BASE_URL}/schedule`, scheduleRoute);
 app.use(`${process.env.BASE_URL}/company/service`, serviceRoute);
