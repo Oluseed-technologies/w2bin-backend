@@ -38,6 +38,7 @@ exports.createSchedule = catchAsync(async (req, res, next) => {
   });
 });
 
+// exports.getSchedule = catchAs
 exports.getMySchedules = getDatasById(Schedule, "user");
 exports.getCompanySchedules = getDatasById(Schedule, "company");
 
