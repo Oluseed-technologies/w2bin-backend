@@ -26,6 +26,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.3",
     "nodemailer-sendinblue-transport": "^2.0.1",
+    "react-paystack": "^4.0.3",
     "stripe": "^12.9.0",
     "uuid": "^9.0.0",
     "validatejs": "^0.0.2",

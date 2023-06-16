@@ -6,6 +6,6 @@ const { generateReference } = require("../controllers/payment");
 
 router.use(protect);
 
-router.route("/").get(generateReference);
+router.route("/").post(generateReference);
 
 module.exports = router;
