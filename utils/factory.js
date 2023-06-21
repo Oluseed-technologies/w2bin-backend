@@ -24,6 +24,11 @@ exports.getDatasById = (Model, key) => {
   return catchAsync(async (req, res, next) => {
     const response = await Model.find({ [key]: req.user._id });
 
+    const data = Model.find({ [key]: req.user._id });
+    const response1 = await new ApiFeatures(req.query, data).select().populate()
+      .query;
+    console.log(response1);
+
     // const response = await new ApiFeatures(req.query, data)
     //   .populate()
     //   .filter()

@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const statesData = require("../datas/location.json");
-const { string } = require("validatejs");
+
+const Account = require("./accounts");
 
 const state = statesData.map((data, index) => {
   return data.state.toLowerCase();
@@ -140,7 +141,6 @@ const userSchema = mongoose.Schema(
       minLength: [3, "Last Name cannot be less than 3"],
       maxLength: [30, "Last Name cannot be greate than 30"],
     },
-
     companyName: {
       type: String,
       required: [
@@ -271,6 +271,14 @@ const userSchema = mongoose.Schema(
     device_id: {
       type: String,
     },
+    bankAccounts: {
+      type: [mongoose.Schema.ObjectId],
+      ref: "Accounts",
+    },
+    wallet: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Wallet",
+    },
   },
 
   {
@@ -298,6 +306,15 @@ userSchema.pre("save", async function (next) {
 
   next();
 });
+
+// userSchema.pre(/^find/, async function (next) {
+//   const user = this.find({ _id: this.getQuery()._id });
+//   console.log(user);
+//   const account = await Account.find({ user: this.getQuery()._id });
+
+//   console.log(account);
+//   // next();
+// });
 
 userSchema.statics.comparePassword = async function (password, hashedPassword) {
   return await bcrypt.compare(password, hashedPassword);

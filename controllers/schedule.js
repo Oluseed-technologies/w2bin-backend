@@ -6,6 +6,7 @@ const Schedule = require("../models/schedule");
 const Notification = require("../models/notifications");
 const User = require("../models/auth");
 const { getData, getDatasById } = require("../utils/factory");
+const ApiFeatures = require("../utils/ApiFeature");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -13,7 +14,10 @@ const uniqueID = uuidv4();
 
 exports.createSchedule = catchAsync(async (req, res, next) => {
   const { currentLocation, type, state, address, description, lga } = req.body;
-  const companies = await User.findById(req.params._id);
+  const companies = await User.findOne({
+    _id: req.params._id,
+    type: "company",
+  });
   console.log(companies);
   if (!companies) {
     return next(
@@ -39,7 +43,19 @@ exports.createSchedule = catchAsync(async (req, res, next) => {
 });
 
 // exports.getSchedule = catchAs
-exports.getMySchedules = getDatasById(Schedule, "user");
+// exports.getMySchedules = getDatasById(Schedule, "user");
+
+exports.getSchedules = catchAsync(async (req, res, next) => {
+  const data = Schedule.find({ [req.user.type]: req.user._id });
+  const response = await new ApiFeatures(req.query, data).select().populate()
+    .query;
+
+  return res.status(200).json({
+    status: "success",
+    message: "schedules fetched successfully",
+    data: response,
+  });
+});
 exports.getCompanySchedules = getDatasById(Schedule, "company");
 
 exports.updateSchedule = catchAsync(async (req, res, next) => {
@@ -71,9 +87,17 @@ exports.sendSchedulePrice = catchAsync(async (req, res, next) => {
     company: req.user._id,
     _id: req.params._id,
   });
+
   console.log(data);
   if (!data) {
-    return next(new AppError("This schedule is not available", 401));
+    return next(new AppError("Operation denied by this company", 401));
+  }
+  if (data.status == "approved") {
+    return next(
+      new AppError(
+        "This schedule is already approved by your client, to change the price please contact the admin"
+      )
+    );
   }
   const schedule = await Schedule.findByIdAndUpdate(
     data._id,
@@ -81,17 +105,16 @@ exports.sendSchedulePrice = catchAsync(async (req, res, next) => {
     { new: true, runValidators: true }
   );
 
-  const response = await Notification.create({
-    senderId: req.user._id,
-    receiverIds: [data?.user],
-    title: "Schedule price",
-    message: `The price for the schedule is ${req.body.price}`,
-  });
+  // const response = await Notification.create({
+  //   senderId: req.user._id,
+  //   receiverIds: [data?.user],
+  //   title: "Schedule price",
+  //   message: `The price for the schedule is ${req.body.price}`,
+  // });
   return res.status(200).json({
     status: "success",
-    message: "details price sent fully",
-    data: response,
-    schedule,
+    message: "schedule price sent fully",
+    data: schedule,
   });
 });
 
@@ -103,7 +126,7 @@ exports.updateStatus = catchAsync(async (req, res, next) => {
     _id: req.params._id,
   });
   if (!data) {
-    return next(new AppError("This schedule does not exist", 404));
+    return next(new AppError("Operation denied", 404));
   }
   if (!data.price) {
     return next(

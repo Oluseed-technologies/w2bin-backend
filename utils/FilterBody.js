@@ -7,6 +7,8 @@ const FilterBody = (
     "resetTokenExpire",
     "token",
     "tokenExpire",
+    "bankAccounts",
+    "wallet",
   ]
 ) => {
   const obj = { ...passedData };

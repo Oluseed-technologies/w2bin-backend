@@ -22,6 +22,7 @@ class ApiFeatures {
   select() {
     console.log(this.page);
     if (!this.queryObj.select) {
+      this.query = this.query.select("-__v -bankAccounts");
       return this;
     }
     this.query = this.query.select(this.queryObj.select);

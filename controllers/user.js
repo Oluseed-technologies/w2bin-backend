@@ -9,7 +9,10 @@ const Company = require("../models/company");
 
 // select
 exports.getMyDetails = catchAsync(async (req, res, next) => {
-  const response = await User.findById(req.user._id);
+  const data = User.findById(req.user._id);
+
+  const response = await new ApiFeatures(req.query, data).select().populate()
+    .query;
 
   return res.status(200).json({
     status: "success",

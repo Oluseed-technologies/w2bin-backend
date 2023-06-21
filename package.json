@@ -11,6 +11,7 @@
   "author": "Halltech",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cac-verify": "^2.1.0",
@@ -27,6 +28,7 @@
     "nodemailer": "^6.9.3",
     "nodemailer-sendinblue-transport": "^2.0.1",
     "react-paystack": "^4.0.3",
+    "socket.io": "^4.6.2",
     "stripe": "^12.9.0",
     "uuid": "^9.0.0",
     "validatejs": "^0.0.2",

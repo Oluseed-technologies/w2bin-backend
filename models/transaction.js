@@ -17,6 +17,10 @@ const transactionSchema = mongoose.Schema(
         message: "The {{VALUE}} status type is not valid",
       },
     },
+    schedule: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Schedule",
+    },
     reference: {
       type: String,
     },

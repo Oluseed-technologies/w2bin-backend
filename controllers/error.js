@@ -49,10 +49,36 @@ const handleJWTMalformed = (err, res) => {
   });
 };
 
+const handlePaystackError = (err, res) => {
+  console.log(err.response.data.message);
+  if (
+    err?.response?.data?.message?.split(":")[0].trim() == "Unknown bank code"
+  ) {
+    return res.status(422).json({
+      status: "fail",
+      message: "Please provide a valid bank code",
+    });
+  }
+  if (
+    err?.response?.data?.message ===
+    "Could not resolve account name. Check parameters or try again."
+  )
+    return res.status(422).json({
+      status: "fail",
+      message: "Please provide a account number",
+    });
+  return res.status(422).json({
+    status: "fail",
+    message: "This is a paystack error",
+  });
+};
+
 const GlobalError = (err, req, res, next) => {
   let statusCode = err.statusCode || 500;
   let status = err.status || "fail";
+  // console.log(err);
   console.log(err);
+
   if (err?.name === "ValidationError") {
     return handleValidationError(err, res);
   }
@@ -65,7 +91,13 @@ const GlobalError = (err, req, res, next) => {
   if (err.name === "JsonWebTokenError") {
     return handleJWTMalformed(err, res);
   }
-
+  if (
+    `${err?.response?.request?.protocol}//${err?.response?.request?.host}` ===
+    process.env.PAYSTACK_URL
+  ) {
+    return handlePaystackError(err, res);
+  }
+  // if
   res.status(statusCode).json({
     status,
     message: err.message,
