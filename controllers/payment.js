@@ -42,13 +42,13 @@ exports.generateReference = catchAsync(async (req, res, next) => {
     schedule,
     purpose,
     amount,
-    reference: `${purpose}-${uniqueID}}`,
+    reference: `${purpose}-${uniqueID}`,
     user: req.user._id,
   });
   return res.status(200).json({
     status: "success",
     message: "Payment initiated, proceed to make your payment",
-    // data: reference,
+    data: reference,
   });
 });
 
