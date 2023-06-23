@@ -67,6 +67,17 @@ exports.getSchedules = catchAsync(async (req, res, next) => {
         year: { $year: "$createdAt" },
         month: { $month: "$createdAt" },
         status: "$status",
+        index: {
+          $subtract: [{ $month: "$createdAt" }, 1],
+        },
+      },
+    },
+
+    {
+      $addFields: {
+        monthName: {
+          $arrayElemAt: [siteData.months, "$index"],
+        },
       },
     },
     {
@@ -74,6 +85,7 @@ exports.getSchedules = catchAsync(async (req, res, next) => {
         _id: {
           month: "$month",
           status: "$status",
+          monthName: "$monthName",
         },
 
         total: { $sum: 1 },
