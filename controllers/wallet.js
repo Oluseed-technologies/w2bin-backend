@@ -9,6 +9,8 @@ const User = require("../models/auth");
 
 const axios = require("axios");
 
+const { v4: uuidv4 } = require("uuid");
+
 exports.createBankAccount = catchAsync(async (req, res, next) => {
   const { accountNumber, bankCode } = req.body;
   if (!accountNumber)
@@ -78,6 +80,62 @@ exports.getBanks = catchAsync(async (req, res, next) => {
     status: "success",
     message: "banks fetched successfully",
     data: data.data,
+  });
+});
+
+exports.initiateWithdrawal = catchAsync(async (req, res, next) => {
+  const { accountNumber, amount } = req.body;
+  console.log(req.user._id);
+  if (!accountNumber || !amount)
+    return next(
+      new AppError("Please provide the account number and amount", 401)
+    );
+
+  const account = await Account.findOne({ accountNumber, user: req.user._id });
+  if (!account)
+    return next(new AppError("This account number is not added yet"));
+  // {
+  //   account_number: accountNumber,
+  //   bank_code: account?.bankCode,
+  // },
+  const initiate = await axios.post(
+    `${process.env.PAYSTACK_URL}/transferrecipient`,
+    {
+      account_number: accountNumber,
+      bank_code: account?.bankCode,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
+      },
+    }
+  );
+  // 000 000 000 0
+  const uniqueID = uuidv4();
+  console.log(initiate?.data?.data?.recipient_code);
+
+  const reference = {
+    source: "balance",
+    reason: "Withdrawal",
+    amount,
+    reference: `withdrawal-${uniqueID}`,
+    receipent: initiate?.data?.data?.recipient_code,
+  };
+
+  const transfer = await axios.post(
+    `${process.env.PAYSTACK_URL}/transfer`,
+    reference,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
+      },
+    }
+  );
+  console.log(transfer);
+  return res.status(200).json({
+    status: "success",
+    message: "Withdrawal initiated successfully",
+    data: reference,
   });
 });
 

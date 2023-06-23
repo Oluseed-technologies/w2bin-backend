@@ -72,7 +72,7 @@ const scheduleSchema = mongoose.Schema(
       type: String,
       default: "pending",
       enum: {
-        values: ["pending", "completed", "approved", "rejected"],
+        values: ["pending", "completed", "approved", "cancelled"],
         message: "Schedule status cannot only be {{VALUE}}",
       },
     },

@@ -7,11 +7,11 @@ const bankSchema = mongoose.Schema(
       required: [true, "Please provide the user ID"],
     },
     accountNumber: {
-      type: Number,
+      type: String,
       required: [true, "Please provide the account number"],
     },
     bankCode: {
-      type: Number,
+      type: String,
       required: [true, "Please provide the bankcode"],
     },
     accountName: {

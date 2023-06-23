@@ -65,11 +65,12 @@ const handlePaystackError = (err, res) => {
   )
     return res.status(422).json({
       status: "fail",
-      message: "Please provide a account number",
+      message: "Please provide an account number",
     });
   return res.status(422).json({
     status: "fail",
-    message: "This is a paystack error",
+    message: err?.response?.data?.message,
+    err: "This is a paystack error",
   });
 };
 

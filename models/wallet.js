@@ -6,7 +6,7 @@ const walletSchema = mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       required: [true, "The user ID is required"],
     },
-    total_amounnt: {
+    total_amount: {
       type: Number,
       default: 0,
     },

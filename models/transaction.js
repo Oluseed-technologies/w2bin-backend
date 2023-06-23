@@ -28,7 +28,7 @@ const transactionSchema = mongoose.Schema(
       type: String,
       required: [true, "Please enter the transaction purpose"],
       enum: {
-        values: ["Payment"],
+        values: ["Payment", "Withdrawal"],
         message: "{{VALUE}} is an Invalid transaction purpose",
       },
     },
