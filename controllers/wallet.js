@@ -6,6 +6,7 @@ const { deleteData } = require("../utils/factory");
 
 const Account = require("../models/accounts");
 const User = require("../models/auth");
+const Withdrawal = require("../models/withdrawal");
 
 const axios = require("axios");
 
@@ -161,5 +162,13 @@ exports.deleteAccount = catchAsync(async (req, res, next) => {
   return res.status(200).json({
     status: "success",
     nessage: "bank account deleted successfully",
+  });
+});
+
+exports.withdrawalRequest = catchAsync(async (req, res, next) => {
+  const response = await Withdrawal.find({ _id: req.user._id });
+  return res.status(200).json({
+    status: "success",
+    message: "Withdrawal fetched successfully",
   });
 });
