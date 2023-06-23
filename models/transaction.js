@@ -4,6 +4,11 @@ const transactionSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.ObjectId,
+      ref: "User",
+    },
+    company: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
     },
     amount: {
       type: Number,
@@ -28,7 +33,7 @@ const transactionSchema = mongoose.Schema(
       type: String,
       required: [true, "Please enter the transaction purpose"],
       enum: {
-        values: ["Payment", "Withdrawal"],
+        values: ["Payment"],
         message: "{{VALUE}} is an Invalid transaction purpose",
       },
     },

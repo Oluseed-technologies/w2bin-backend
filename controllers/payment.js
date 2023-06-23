@@ -16,7 +16,7 @@ const ApiFeatures = require("../utils/ApiFeature");
 const Wallet = require("../models/wallet");
 
 exports.generateReference = catchAsync(async (req, res, next) => {
-  const { purpose, amount, schedule } = req.body;
+  const { purpose, schedule } = req.body;
   const uniqueID = uuidv4();
   if (!schedule) {
     return next(new AppError("Please provide the ID of the schedule"));
@@ -43,10 +43,12 @@ exports.generateReference = catchAsync(async (req, res, next) => {
   const reference = await Transaction.create({
     schedule,
     purpose,
-    amount,
+    amount: data?.price,
     reference: `${purpose}-${uniqueID}`,
     user: req.user._id,
+    company: data?.company,
   });
+  console.log(reference);
   return res.status(200).json({
     status: "success",
     message: "Payment initiated, proceed to make your payment",
@@ -134,4 +136,11 @@ exports.verifyPayment = catchAsync(async (req, res, next) => {
   return next(new AppError("Payment not successfuly", 422));
 });
 
-exports.getTransactions = getDatasById(Transaction, "user");
+exports.getTransactions = catchAsync(async (req, res, next) => {
+  const response = await Transaction.find({ [req.user.type]: req.user._id });
+  return res.status(200).json({
+    status: "success",
+    message: "Transactions data fetch successfully",
+    data: response,
+  });
+});
