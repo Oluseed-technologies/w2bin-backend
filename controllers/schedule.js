@@ -122,8 +122,10 @@ exports.getSchedules = catchAsync(async (req, res, next) => {
   return res.status(200).json({
     status: "success",
     message: "schedules fetched successfully",
-    // data: response,
-    stats,
+    data: {
+      data: response,
+      stats,
+    },
   });
 });
 exports.getCompanySchedules = getDatasById(Schedule, "company");
