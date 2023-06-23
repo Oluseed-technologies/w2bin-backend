@@ -86,4 +86,17 @@ const scheduleSchema = mongoose.Schema(
   { timestamps: true }
 );
 
+scheduleSchema.pre("aggregate", function (next) {
+  console.log("yeah");
+  this.pipeline().unshift({ $addFields: { newField: "yeah" } });
+
+  next();
+  // {
+  //   $addFields: {
+  //     // monthName: "$month",
+  //     monthName: siteData.months[+"$month"],
+  //   },
+  // },
+});
+
 module.exports = mongoose.model("Schedule", scheduleSchema);

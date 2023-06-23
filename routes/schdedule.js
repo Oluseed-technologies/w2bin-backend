@@ -17,8 +17,6 @@ router.route("/").get(getSchedules);
 
 router.route("/status/:_id").post(updateStatus);
 
-router.use(restrict("company"));
-
-router.route("/price/:_id").post(sendSchedulePrice);
+router.route("/price/:_id").post(restrict("company"), sendSchedulePrice);
 
 module.exports = router;

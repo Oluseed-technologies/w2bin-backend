@@ -12,6 +12,8 @@ const { v4: uuidv4 } = require("uuid");
 const Transaction = require("../models/transaction");
 const Wallet = require("../models/wallet");
 
+const siteData = require("../data.json");
+
 const uniqueID = uuidv4();
 
 exports.createSchedule = catchAsync(async (req, res, next) => {
@@ -51,11 +53,77 @@ exports.getSchedules = catchAsync(async (req, res, next) => {
   const data = Schedule.find({ [req.user.type]: req.user._id });
   const response = await new ApiFeatures(req.query, data).select().populate()
     .query;
+  console.log(siteData.months[6]);
+  const stats = await Schedule.aggregate([
+    {
+      $match: {
+        $expr: {
+          $eq: [{ $year: "$createdAt" }, 2023],
+        },
+      },
+    },
+    {
+      $project: {
+        year: { $year: "$createdAt" },
+        month: { $month: "$createdAt" },
+        status: "$status",
+      },
+    },
+    {
+      $group: {
+        _id: {
+          month: "$month",
+          status: "$status",
+        },
+
+        total: { $sum: 1 },
+      },
+    },
+  ]);
+  // const stats = await Schedule.aggregate([
+  //   {
+  //     $match: {
+  //       status: {
+  //         $in: ["pending", "completed", "approved"],
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $project: {
+  //       year: { $year: "$createdAt" },
+  //       month: { $month: "$createdAt" },
+  //       status: "$status",
+  //       index: {
+  //         $subtract: [{ $month: "$createdAt" }, 1],
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $addFields: {
+  //       monthName: {
+  //         $arrayElemAt: [siteData.months, "$index"],
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $group: {
+  //       _id: "$status",
+  //       month: {
+  //         $push: "$monthName",
+  //       },
+  //       sum: { $sum: 1 },
+  //       // $status: {
+  //       //   $in: ["pending", "completed", "approved"],
+  //       // },
+  //     },
+  //   },
+  // ]);
 
   return res.status(200).json({
     status: "success",
     message: "schedules fetched successfully",
-    data: response,
+    // data: response,
+    stats,
   });
 });
 exports.getCompanySchedules = getDatasById(Schedule, "company");
@@ -143,8 +211,7 @@ exports.updateStatus = catchAsync(async (req, res, next) => {
     );
   }
   // console.log(status );
-  console.log(status !== "cancelled");
-  console.log(status !== "completed");
+
   if (status !== "cancelled" && status !== "completed") {
     return next(
       new AppError(`You are not allowed to mark this schedule as ${status}`)
