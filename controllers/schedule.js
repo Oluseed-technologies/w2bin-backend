@@ -53,15 +53,16 @@ exports.getSchedules = catchAsync(async (req, res, next) => {
   const data = Schedule.find({ [req.user.type]: req.user._id });
   const response = await new ApiFeatures(req.query, data).select().populate()
     .query;
-  console.log(siteData.months[6]);
   const stats = await Schedule.aggregate([
     {
       $match: {
+        [req.user.type]: req.user._id,
         $expr: {
           $eq: [{ $year: "$createdAt" }, 2023],
         },
       },
     },
+
     {
       $project: {
         year: { $year: "$createdAt" },
@@ -92,44 +93,6 @@ exports.getSchedules = catchAsync(async (req, res, next) => {
       },
     },
   ]);
-  // const stats = await Schedule.aggregate([
-  //   {
-  //     $match: {
-  //       status: {
-  //         $in: ["pending", "completed", "approved"],
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $project: {
-  //       year: { $year: "$createdAt" },
-  //       month: { $month: "$createdAt" },
-  //       status: "$status",
-  //       index: {
-  //         $subtract: [{ $month: "$createdAt" }, 1],
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $addFields: {
-  //       monthName: {
-  //         $arrayElemAt: [siteData.months, "$index"],
-  //       },
-  //     },
-  //   },
-  //   {
-  //     $group: {
-  //       _id: "$status",
-  //       month: {
-  //         $push: "$monthName",
-  //       },
-  //       sum: { $sum: 1 },
-  //       // $status: {
-  //       //   $in: ["pending", "completed", "approved"],
-  //       // },
-  //     },
-  //   },
-  // ]);
 
   return res.status(200).json({
     status: "success",
