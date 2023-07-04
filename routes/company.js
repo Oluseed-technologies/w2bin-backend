@@ -6,9 +6,6 @@ const {
   createCompany,
   getCompanies,
   getCompany,
-  //   getCompanys,
-  //   updateCompany,
-  //   deleteCompany,
 } = require("../controllers/company");
 
 router.use(protect);
@@ -18,7 +15,5 @@ router
   .get(getCompanies);
 
 router.route("/:_id").get(getCompany);
-// .get(getServices);
-// router.route("/:_id").get(getService).put(updateService).delete(deleteService);
 
 module.exports = router;

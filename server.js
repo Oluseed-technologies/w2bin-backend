@@ -4,29 +4,64 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
 const AppError = require("./utils/AppError");
 const App = require("./app");
-// const { Server } = require("socket.io");
-// const { createServer } = require("http");
+const http = require("http");
+const socket = require("socket.io");
+const { protect } = require("./controllers/auth");
 
-const { init } = require("./socket");
+const server = http.createServer(App);
+
+const io = socket(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  // io.engine.use(protect)
+  const userId = socket.handshake.query.userId;
+  console.log(socket.handshake);
+  io.use((socket, next) => {
+    !userId ? next(new Error("Please provide the user ID")) : next();
+  });
+
+  socket.join(userId);
+
+  socket.on("connect_error", (err) => {
+    console.log(err.message); // prints the message associated with the error
+  });
+
+  console.log(userId);
+
+  socket.broadcast.emit("join-chat", {
+    message: "A user joined the chat",
+  });
+  socket.emit("join-chat", {
+    message: "You joined the chat",
+  });
+
+  socket.on("chat", (chat) => {
+    console.log(chat);
+    receivers = [...chat.receivers, userId];
+    console.log(receivers);
+    receivers?.forEach((id) => {
+      console.log(id);
+      io.to(id).emit("chat", chat);
+    });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Disconnected");
+  });
+  console.log("Connnected");
+});
 
 mongoose
   .connect(process.env.DATABASE_URL)
   .then(() => {
-    const server = App.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log(
         `server running at port ${process.env.PORT} with socket initallize`
       );
-    });
-    const io = init(server);
-
-    io.on("connection", (socket) => {
-      socket.on("message", (data) => {
-        console.log(data);
-
-        socket.emit("message", data);
-      });
-
-      console.log("a user is connected");
     });
   })
   .catch((err) => {

@@ -73,7 +73,7 @@ exports.verifyPayment = catchAsync(async (req, res, next) => {
   }
 
   const response = await axios.get(
-    `https://api.paystack.co/transaction/verify/${id}`,
+    `${process.env.PAYSTACK_URL}/transaction/verify/${id}`,
     {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
@@ -128,12 +128,10 @@ exports.verifyPayment = catchAsync(async (req, res, next) => {
         message: "Payment successfully made",
         data: schedule,
       });
-
-      console.log("yeah");
     }
   }
 
-  return next(new AppError("Payment not successfuly", 422));
+  return next(new AppError("Payment not successful", 401));
 });
 
 exports.getTransactions = catchAsync(async (req, res, next) => {

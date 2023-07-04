@@ -3,29 +3,25 @@ const AppError = require("../utils/AppError");
 
 const admin = require("firebase-admin");
 
+const OneSignal = require("onesignal-node");
+
 const app = require("../app");
+
+const axios = require("axios");
+
+const { NotificationClient } = require("../utils/client");
 
 // JA9aHJ-FqKzAwUNHccO4XC-a4mG9Z_C18XM1BukKIz0
 exports.createNotification = catchAsync(async (req, res, next) => {
-  if (!req.user.device_id) {
-    return next(
-      new AppError(
-        "Contact the admin to get your accoount activated for notifcation",
-        401
-      )
-    );
-  }
-  const message = {
-    notification: {
-      title: "New message",
-      body: "You have a new message",
+  const notification = {
+    contents: {
+      en: "Good Morning Sir, it is nice meeting you",
     },
-    token:
-      "eXSssu8WOxRuBjY5tAlmxz:APA91bFIORftGoUw2AaTK_p1w30XY7ag7cQU0b2EdsU4yoMW3jCooLIfA53Ds3hwtF1iLOx70WwTY054UaZYPerA0oMGnIqQ83YlIZO-VKZk8jac7vjpjeUffyzXwU0Da5lZtbO_YC3P",
-    // token: req.user.device_id,
+    include_external_user_ids: ["648083659d412d04ee8ba5e9"],
   };
-  const response = await app.instance().send(message);
-  console.log(response);
+
+  const response = await NotificationClient().createNotification(notification);
+
   return res.status(200).json({
     status: "success",
     message: "Notification sent successfully",

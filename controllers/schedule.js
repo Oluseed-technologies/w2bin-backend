@@ -244,3 +244,17 @@ exports.updateStatus = catchAsync(async (req, res, next) => {
     response,
   });
 });
+
+exports.getSchedule = catchAsync(async (req, res, next) => {
+  const { _id } = req.params;
+  const data = Schedule.findOne({ [req.user.type]: req.user._id, _id });
+  if (!data) return next(new AppError("schedule not found", 401));
+
+  return res.status(200).json({
+    status: "success",
+    message: "schedule successfully fetched",
+    data,
+  });
+});
+
+// 64959a9a6becf0e78477fddc

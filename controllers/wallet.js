@@ -20,8 +20,8 @@ exports.createBankAccount = catchAsync(async (req, res, next) => {
 
   const findBank = await Account.findOne({ user: req.user._id, accountNumber });
 
-  if (findBank)
-    next(new AppError("This bank detail is already added to an account"));
+  // if (findBank)
+  //   next(new AppError("This bank detail is already added to an account"));
 
   const response = await axios.get(
     `${process.env.PAYSTACK_URL}/bank/resolve?account_number=${accountNumber}&bank_code=${bankCode}`,
@@ -32,11 +32,14 @@ exports.createBankAccount = catchAsync(async (req, res, next) => {
     }
   );
 
-  const banks = await axios.get("https://api.paystack.co/bank?currency=NGN", {
-    headers: {
-      Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
-    },
-  });
+  const banks = await axios.get(
+    `${process.env.PAYSTACK_URL}/bank?currency=NGN`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
+      },
+    }
+  );
 
   const bank = banks?.data?.data?.find((data, index) => {
     return data?.id === response.data.data.bank_id;
@@ -54,7 +57,6 @@ exports.createBankAccount = catchAsync(async (req, res, next) => {
   const accountIds = accounts?.map((data, index) => {
     return data?._id;
   });
-  console.log(accountIds);
 
   const user = await User.findByIdAndUpdate(
     req.user._id,
@@ -69,11 +71,14 @@ exports.createBankAccount = catchAsync(async (req, res, next) => {
 });
 
 exports.getBanks = catchAsync(async (req, res, next) => {
-  const data = await axios.get("https://api.paystack.co/bank?currency=NGN", {
-    headers: {
-      Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
-    },
-  });
+  const data = await axios.get(
+    `${process.env.PAYSTACK_URL}/bank?currency=NGN`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_KEY}`,
+      },
+    }
+  );
 
   console.log(data);
 

@@ -56,7 +56,7 @@ const handlePaystackError = (err, res) => {
   ) {
     return res.status(422).json({
       status: "fail",
-      message: "Please provide a valid bank code",
+      message: "Please provide a valid bank ",
     });
   }
   if (
@@ -65,7 +65,8 @@ const handlePaystackError = (err, res) => {
   )
     return res.status(422).json({
       status: "fail",
-      message: "Please provide an account number",
+      message:
+        "Please provide a valid account number with it corresponding bank name",
     });
   return res.status(422).json({
     status: "fail",
