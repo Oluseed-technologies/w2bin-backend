@@ -10,7 +10,7 @@ const {
 } = require("../controllers/team");
 
 router.use(protect);
-router.use(lessRestriction("company"));
+router.use(restrict("company"));
 router.route("/:_id").put(updateWorker).delete(deleteWorker).get(getWorker);
 router.route("/").post(createWorker);
 router.route("/").get(getWorkers);

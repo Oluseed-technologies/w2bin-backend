@@ -99,7 +99,7 @@ exports.verifyPayment = catchAsync(async (req, res, next) => {
       const wallet = await Wallet.findOne({ owner: schedule.company });
       if (!wallet) {
         const createWallet = await Wallet.create({
-          owner: company.company,
+          owner: schedule.company,
           non_withdrawable_amount: response.data.data.amount,
           total_amount: response.data.data.amount,
         });
@@ -135,7 +135,9 @@ exports.verifyPayment = catchAsync(async (req, res, next) => {
 });
 
 exports.getTransactions = catchAsync(async (req, res, next) => {
-  const response = await Transaction.find({ [req.user.type]: req.user._id });
+  const data = Transaction.find({ [req.user.type]: req.user._id });
+  const response = await new ApiFeatures(req.query, data).select().populate()
+    .query;
   return res.status(200).json({
     status: "success",
     message: "Transactions data fetch successfully",

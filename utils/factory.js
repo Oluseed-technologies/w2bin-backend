@@ -22,19 +22,11 @@ exports.getAllDatas = (Model) => {
 
 exports.getDatasById = (Model, key) => {
   return catchAsync(async (req, res, next) => {
-    const response = await Model.find({ [key]: req.user._id });
+    // const response = await Model.find({ [key]: req.user._id });
 
     const data = Model.find({ [key]: req.user._id });
-    const response1 = await new ApiFeatures(req.query, data).select().populate()
+    const response = await new ApiFeatures(req.query, data).select().populate()
       .query;
-    console.log(response1);
-
-    // const response = await new ApiFeatures(req.query, data)
-    //   .populate()
-    //   .filter()
-    //   .select()
-    //   .sort()
-    //   .paginate();
 
     return res.status(200).json({
       status: "success",
@@ -51,7 +43,6 @@ exports.getDatasByDoubleId = (Model, key1, key2) => {
       [key2]: req.params._id,
     });
     console.log(data);
-    // const response = await new ApiFeatures(req.query, user).select();
 
     res.status(200).json({
       status: "success",

@@ -40,7 +40,7 @@ class ApiFeatures {
     if (this.queryObj.sort) {
       this.query = this.query.sort(this.queryObj.sort.split(",").join(" "));
     } else {
-      this.query = this.query.sort("-createAt");
+      this.query = this.query.sort("-createdAt");
     }
     return this;
   }

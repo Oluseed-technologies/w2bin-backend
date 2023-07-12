@@ -1,18 +1,14 @@
 const mongoose = require("mongoose");
 
-const notificationsSchema = mongoose.Schema(
+const chatSchema = mongoose.Schema(
   {
     message: {
       type: String,
       required: [true, "The message is required"],
     },
-    read: {
+    resolve: {
       type: Boolean,
       default: false,
-    },
-    title: {
-      type: String,
-      required: [true, "The title is required"],
     },
     senderId: {
       type: mongoose.Schema.ObjectId,
@@ -27,4 +23,4 @@ const notificationsSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("notification", notificationsSchema);
+module.exports = mongoose.model("chat", chatSchema);

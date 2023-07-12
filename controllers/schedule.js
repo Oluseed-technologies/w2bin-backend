@@ -8,6 +8,8 @@ const User = require("../models/auth");
 const { getData, getDatasById } = require("../utils/factory");
 const ApiFeatures = require("../utils/ApiFeature");
 
+const { NotificationClient } = require("../utils/client");
+
 const { v4: uuidv4 } = require("uuid");
 const Transaction = require("../models/transaction");
 const Wallet = require("../models/wallet");
@@ -39,15 +41,33 @@ exports.createSchedule = catchAsync(async (req, res, next) => {
     description,
     type,
   });
+
+  const notification = {
+    headings: { en: "You have a schedule" },
+    subtitle: { en: "A user created a schdedule" },
+    contents: {
+      en: ` schedule type : ${response.type} - schedule description - ${response.description}`,
+    },
+    include_player_ids: [companies?.device_id],
+  };
+
+  const notification_response = await NotificationClient().createNotification(
+    notification
+  );
+
+  const response2 = await Notification.create({
+    senderId: req.user._id,
+    receiverIds: [req.params._id],
+    title: "Create Schedule",
+    message: `A schedule has been created`,
+  });
+
   return res.status(201).json({
     status: "created",
     message: "schedule successfully fixed",
     data: response,
   });
 });
-
-// exports.getSchedule = catchAs
-// exports.getMySchedules = getDatasById(Schedule, "user");
 
 exports.getSchedules = catchAsync(async (req, res, next) => {
   const data = Schedule.find({ [req.user.type]: req.user._id });
@@ -152,12 +172,28 @@ exports.sendSchedulePrice = catchAsync(async (req, res, next) => {
     { new: true, runValidators: true }
   );
 
-  // const response = await Notification.create({
-  //   senderId: req.user._id,
-  //   receiverIds: [data?.user],
-  //   title: "Schedule price",
-  //   message: `The price for the schedule is ${req.body.price}`,
-  // });
+  const user = await User.findById(schedule.user);
+
+  const notification = {
+    headings: { en: "Schedule Price Update" },
+    subtitle: { en: "A user created a schdedule" },
+    contents: {
+      en: ` The price of the schedule is : ${schedule.price} `,
+    },
+    include_player_ids: [user?.device_id],
+  };
+
+  const notification_response = await NotificationClient().createNotification(
+    notification
+  );
+
+  const response = await Notification.create({
+    senderId: req.user._id,
+    receiverIds: [data?.user],
+    title: "Schedule price",
+    message: `The price for the schedule is ${req.body.price}`,
+  });
+
   return res.status(200).json({
     status: "success",
     message: "schedule price sent fully",

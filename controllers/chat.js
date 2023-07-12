@@ -1,6 +1,8 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
-const ApiFeature = require("../utils/ApiFeature");
+const ApiFeatures = require("../utils/ApiFeature");
+const User = require("../models/auth");
+const Chat = require("../models/chat");
 
 const { NotificationClient } = require("../utils/client");
 
@@ -11,11 +13,17 @@ exports.initiateChat = catchAsync(async (req, res, next) => {
   if (!receiverId) {
     return next(new AppError("Please provide the RECEIVERS ID", 401));
   }
+
+  const user = await User.findById(receiverId);
+  if (!user) {
+    return next(new AppError("This user does not exist", 401));
+  }
   const notification = {
+    title: "Chat initiate",
     contents: {
-      en: "Chat successfully initiated",
+      en: "A schedule negotation was initiated",
     },
-    include_external_user_ids: [receiverId],
+    include_player_ids: [user?.device_id],
   };
 
   const response = await NotificationClient().createNotification(notification);
@@ -27,10 +35,32 @@ exports.initiateChat = catchAsync(async (req, res, next) => {
 });
 
 exports.sendMessage = catchAsync(async (req, res, next) => {
-  socket.getIO().emit("message", "hello");
-  //   console.log(socket.getIO().id);
+  const { message, receiverId } = req.body;
+
+  if (!(await User.findById(receiverId))) {
+    return next(new AppError("A user with this ID does not exist", 401));
+  }
+
+  const response = await Chat.create({
+    message,
+    receiverIds: [receiverId],
+    senderId: req.user._id,
+  });
+
   return res.status(200).json({
     status: "success",
-    message: "message sent successfully",
+  });
+});
+
+exports.getChats = catchAsync(async (req, res, next) => {
+  const data = Chat.find({
+    $or: [{ receiverIds: req.user._id }, { senderId: req.user._id }],
+  });
+  const response = await new ApiFeatures(req.query, data).populate().query;
+
+  return res.status(200).json({
+    status: "success",
+    message: "chats  fetched successfully",
+    data: response,
   });
 });

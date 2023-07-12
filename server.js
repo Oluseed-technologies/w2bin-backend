@@ -19,7 +19,7 @@ const io = socket(server, {
 io.on("connection", (socket) => {
   // io.engine.use(protect)
   const userId = socket.handshake.query.userId;
-  console.log(socket.handshake);
+
   io.use((socket, next) => {
     !userId ? next(new Error("Please provide the user ID")) : next();
   });
@@ -29,8 +29,6 @@ io.on("connection", (socket) => {
   socket.on("connect_error", (err) => {
     console.log(err.message); // prints the message associated with the error
   });
-
-  console.log(userId);
 
   socket.broadcast.emit("join-chat", {
     message: "A user joined the chat",
@@ -42,7 +40,7 @@ io.on("connection", (socket) => {
   socket.on("chat", (chat) => {
     console.log(chat);
     receivers = [...chat.receivers, userId];
-    console.log(receivers);
+
     receivers?.forEach((id) => {
       console.log(id);
       io.to(id).emit("chat", chat);

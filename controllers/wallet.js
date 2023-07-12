@@ -100,10 +100,7 @@ exports.initiateWithdrawal = catchAsync(async (req, res, next) => {
   const account = await Account.findOne({ accountNumber, user: req.user._id });
   if (!account)
     return next(new AppError("This account number is not added yet"));
-  // {
-  //   account_number: accountNumber,
-  //   bank_code: account?.bankCode,
-  // },
+
   const initiate = await axios.post(
     `${process.env.PAYSTACK_URL}/transferrecipient`,
     {
