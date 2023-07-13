@@ -4,9 +4,29 @@ const ApiFeatures = require("../utils/ApiFeature");
 const FilterBody = require("../utils/FilterBody");
 const { getData, getDatasById } = require("../utils/factory");
 
+const multer = require("multer");
+const sharp = require("sharp");
+
 const User = require("../models/auth");
 const Company = require("../models/company");
 
+const storage = multer.memoryStorage();
+
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_KEY,
+  api_secret: process.env.CLOUD_SECRET,
+});
+
+const fileFilter = (req, file, cb) => {
+  console.log({ file });
+  cb(null, true);
+};
+
+const upload = multer({ storage, fileFilter });
+exports.uploadImage = upload.single("image");
 // select
 exports.getMyDetails = catchAsync(async (req, res, next) => {
   const data = User.findById(req.user._id);
@@ -46,6 +66,56 @@ exports.updateMyDetails = catchAsync(async (req, res, next) => {
     message: "User Profile  updated succesfully",
     data: user,
   });
+});
+
+exports.updateProfileImage = catchAsync(async (req, res, next) => {
+  console.log("Logging the file");
+  if (!req.file) return next(new AppError("Please select a file", 401));
+  cloudinary.uploader
+    .upload_stream({ resource_type: "image" }, (err, result) => {
+      if (err) return next(err);
+      User.findByIdAndUpdate(
+        req.user._id,
+        { image: result.secure_url },
+        {
+          runValidators: false,
+          new: true,
+        }
+      ).then((data) => {
+        console.log(data);
+        return res.status(200).json({
+          status: "success",
+          message: "Image Upload successful",
+          data,
+        });
+      });
+    })
+    .end(req.file.buffer);
+});
+
+exports.updateCoverImage = catchAsync(async (req, res, next) => {
+  console.log("Logging the file");
+  if (!req.file) return next(new AppError("Please select a file", 401));
+  cloudinary.uploader
+    .upload_stream({ resource_type: "image" }, (err, result) => {
+      if (err) return next(err);
+      User.findByIdAndUpdate(
+        req.user._id,
+        { coverImage: result.secure_url },
+        {
+          runValidators: false,
+          new: true,
+        }
+      ).then((data) => {
+        console.log(data);
+        return res.status(200).json({
+          status: "success",
+          message: "Cover Image Upload successful",
+          data,
+        });
+      });
+    })
+    .end(req.file.buffer);
 });
 
 exports.activateUserAccount = catchAsync(async (req, res, next) => {

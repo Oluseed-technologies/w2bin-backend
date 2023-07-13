@@ -28,6 +28,9 @@ const scheduleSchema = mongoose.Schema(
       type: String,
       default: "Nigeria",
     },
+    images: {
+      type: [String],
+    },
     currentLocation: {
       type: Boolean,
       default: true,

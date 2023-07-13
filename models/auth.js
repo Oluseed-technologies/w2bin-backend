@@ -235,6 +235,12 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    image: {
+      type: String,
+    },
+    coverImage: {
+      type: String,
+    },
     about: {
       type: String,
       trim: true,
